@@ -1,4 +1,9 @@
-﻿using System;
+﻿/*
+ * Họ tên: Nguyễn Khắc Triệu
+ * MSSV: 2123110466
+ * Lớp: CCQ2311D
+ */
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;

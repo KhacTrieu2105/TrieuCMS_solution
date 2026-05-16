@@ -1,4 +1,9 @@
-﻿using CMS.Data.Entities;
+﻿/*
+ * Họ tên: Nguyễn Khắc Triệu
+ * MSSV: 2123110466
+ * Lớp: CCQ2311D
+ */
+using CMS.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CMS.Backend.Controllers
