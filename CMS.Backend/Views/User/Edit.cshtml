@@ -1,0 +1,61 @@
+﻿@model CMS.Data.Entities.User
+
+@{
+    // Sửa lại Layout Admin để đồng bộ thanh Sidebar điều hướng
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Cập nhật thành viên";
+}
+
+<div class="container mt-4">
+    <div class="card shadow border-0">
+        <div class="card-header bg-warning text-dark py-3">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-pencil-square"></i> CẬP NHẬT THÔNG TIN THÀNH VIÊN</h5>
+        </div>
+        <div class="card-body p-4">
+            <form asp-action="Edit" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <input type="hidden" asp-for="Id" />
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Tên đăng nhập:</label>
+                        <input asp-for="Username" class="form-control bg-light" readonly />
+                        <small class="text-danger d-block mt-1">* Tên đăng nhập là mã định danh cố định, không được phép chỉnh sửa.</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Mật khẩu mới:</label>
+                        <input type="password" name="NewPassword" class="form-control" placeholder="Để trống nếu muốn giữ lại mật khẩu cũ" />
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Họ và Tên:</label>
+                        <input asp-for="FullName" class="form-control" required />
+                        <span asp-validation-for="FullName" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Vai trò hệ thống:</label>
+                        <select asp-for="Role" class="form-select" required>
+                            <option value="Admin">Admin</option>
+                            <option value="Editor">Editor</option>
+                        </select>
+                        <span asp-validation-for="Role" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="pt-3 border-top d-flex gap-2">
+                    <button type="submit" class="btn btn-warning fw-bold text-dark">Cập nhật thông tin</button>
+                    <a asp-action="Index" class="btn btn-secondary">Quay lại danh sách</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

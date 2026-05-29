@@ -1,60 +1,56 @@
 ﻿@model IEnumerable<CMS.Data.Entities.User>
-@* Đảm bảo map chính xác tới thư mục chứa thực thể User trong project CMS.Data *@
 
 @{
-    ViewData["Title"] = "Danh sách thành viên";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Quản lý thành viên";
 }
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>Quản lý thành viên hệ thống</h2>
-        <a class="btn btn-success" href="/User/Create">Thêm thành viên</a>
+        <h2 class="text-dark fw-bold">QUẢN LÝ THÀNH VIÊN</h2>
+        <a asp-action="Create" class="btn btn-success fw-bold">
+            <i class="bi bi-plus-circle"></i> Thêm thành viên mới
+        </a>
     </div>
 
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <table class="table table-hover table-striped align-middle">
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
                 <thead class="table-dark">
                     <tr>
-                        <th>Tên tài khoản (Username)</th>
-                        <th>Họ và tên</th>
-                        <th>Vai trò (Role)</th>
-                        <th>Hành động</th>
+                        <th style="width: 5%">ID</th>
+                        <th style="width: 25%">Tên đăng nhập</th>
+                        <th style="width: 30%">Họ và Tên</th>
+                        <th style="width: 20%">Vai trò (Role)</th>
+                        <th style="width: 20%" class="text-center">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @if (Model != null && Model.Any())
-                    {
-                        foreach (var user in Model)
-                        {
-                            <tr>
-                                <td class="fw-bold text-primary">@user.Username</td>
-                                <td class="fw-medium">@user.FullName</td>
-                                <td>
-                                    @if (user.Role == "Admin")
-                                    {
-                                        <span class="badge bg-danger">Admin</span>
-                                    }
-                                    else if (user.Role == "Editor" || user.Role == "Moderator")
-                                    {
-                                        <span class="badge bg-warning text-dark">@user.Role</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-secondary">User</span>
-                                    }
-                                </td>
-                                <td>
-                                    <a class="btn btn-sm btn-warning" href="/User/Edit/@user.Id">Cập nhật quyền</a>
-                                    <a class="btn btn-sm btn-danger" href="/User/Delete/@user.Id" onclick="return confirm('Xóa thành viên này?')">Xóa</a>
-                                </td>
-                            </tr>
-                        }
-                    }
-                    else
+                    @foreach (var user in Model)
                     {
                         <tr>
-                            <td colspan="4" class="text-center text-muted py-4">Hệ thống chưa có thành viên nào.</td>
+                            <td>@user.Id</td>
+                            <td class="fw-bold text-primary">@user.Username</td>
+                            <td>@user.FullName</td>
+                            <td>
+                                @if (user.Role == "Admin")
+                                {
+                                    <span class="badge bg-danger">Admin</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-info text-dark">Editor</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <a asp-action="Edit" asp-route-id="@user.Id" class="btn btn-sm btn-outline-warning me-1">
+                                    <i class="bi bi-pencil-square"></i> Sửa
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@user.Id" class="btn btn-sm btn-outline-danger"
+                                   onclick="return confirm('Bạn có chắc chắn muốn xóa thành viên @user.Username không?')">
+                                    <i class="bi bi-trash"></i> Xóa
+                                </a>
+                            </td>
                         </tr>
                     }
                 </tbody>
