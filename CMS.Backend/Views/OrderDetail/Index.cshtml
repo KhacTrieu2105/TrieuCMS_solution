@@ -1,0 +1,47 @@
+﻿@model IEnumerable<CMS.Data.Entities.OrderDetail>
+
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-3 text-info">📑 Bài tập 7: Chi tiết các đơn hàng</h2>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-hover table-striped align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>STT</th>
+                        <th>Mã Đơn hàng</th>
+                        <th>Mã Sản phẩm</th>
+                        <th>Số lượng</th>
+                        <th>Đơn giá</th>
+                        <th>Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.Id</td>
+                                <td class="fw-bold">#@item.OrderId</td>
+                                <td>SP-0@item.ProductId</td>
+                                <td>@item.Quantity</td>
+                                <td class="text-muted">Xem chi tiết sản phẩm</td>
+                                <td class="text-success fw-bold">Tính sau</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-3">Chưa có dữ liệu chi tiết đơn hàng.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
