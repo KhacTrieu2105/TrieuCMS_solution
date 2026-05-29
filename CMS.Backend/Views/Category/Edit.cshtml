@@ -1,0 +1,36 @@
+﻿@model CMS.Data.Entities.Category
+
+<div class="container mt-4">
+    <h2 class="text-warning">CHỈNH SỬA DANH MỤC</h2>
+    <hr />
+
+    <form asp-action="Edit" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <input type="hidden" asp-for="Id" />
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Tên danh mục:</label>
+            <input asp-for="Name" class="form-control" placeholder="Nhập tên danh mục cần chỉnh sửa..." required />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Mô tả:</label>
+            <textarea asp-for="Description" class="form-control" rows="3" placeholder="Nhập mô tả mới..."></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-warning text-dark fw-bold">
+            <i class="bi bi-check-circle"></i> Cập nhật thay đổi
+        </button>
+        <a asp-action="Index" class="btn btn-secondary">Hủy bỏ</a>
+    </form>
+</div>
+
+@* Đoạn script bắt buộc giúp kích hoạt kiểm tra dữ liệu *@
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
