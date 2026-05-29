@@ -1,0 +1,65 @@
+﻿@model IEnumerable<CMS.Data.Entities.Post>
+@* Hãy thay CMS.Backend.Models.Post bằng chính xác namespace class Post của bạn *@
+
+@{
+    ViewData["Title"] = "Danh sách bài viết";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Quản lý bài viết</h2>
+        <a class="btn btn-primary" href="/Post/Create">Tạo bài viết mới</a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-hover table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Hình ảnh</th>
+                        <th>Tiêu đề</th>
+                        <th>Nội dung tóm tắt</th>
+                        <th>Ngày tạo</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var post in Model)
+                        {
+                            <tr>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(post.ImageUrl))
+                                    {
+                                        <img src="@post.ImageUrl" alt="@post.Title" style="width: 80px; height: auto; border-radius: 4px;" />
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Không có ảnh</span>
+                                    }
+                                </td>
+                                <td class="fw-bold">@post.Title</td>
+                                <td>
+                                    @(post.Content?.Length > 100 ? post.Content.Substring(0, 100) + "..." : post.Content)
+                                </td>
+                                <td>@post.CreatedDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>
+                                    <a class="btn btn-sm btn-info text-white" href="/Post/Details/@post.Id">Xem</a>
+                                    <a class="btn btn-sm btn-warning" href="/Post/Edit/@post.Id">Sửa</a>
+                                    <a class="btn btn-sm btn-danger" href="/Post/Delete/@post.Id" onclick="return confirm('Bạn có chắc chắn muốn xóa?')">Xóa</a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">Chưa có bài viết nào trong hệ thống.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
