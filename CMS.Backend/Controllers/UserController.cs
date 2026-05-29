@@ -1,4 +1,5 @@
-﻿using CMS.Backend; // Tên namespace chứa ApplicationDbContext của bạn
+﻿using Microsoft.AspNetCore.Authorization;
+using CMS.Backend; // Tên namespace chứa ApplicationDbContext của bạn
 using CMS.Data;
 using CMS.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
@@ -7,6 +8,7 @@ using System.Linq;
 
 namespace CMS.Backend.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class UserController : Controller
     {
         private readonly ApplicationDbContext _context;
