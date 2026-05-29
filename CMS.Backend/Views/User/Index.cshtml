@@ -1,0 +1,64 @@
+﻿@model IEnumerable<CMS.Data.Entities.User>
+@* Đảm bảo map chính xác tới thư mục chứa thực thể User trong project CMS.Data *@
+
+@{
+    ViewData["Title"] = "Danh sách thành viên";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Quản lý thành viên hệ thống</h2>
+        <a class="btn btn-success" href="/User/Create">Thêm thành viên</a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-hover table-striped align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Tên tài khoản (Username)</th>
+                        <th>Họ và tên</th>
+                        <th>Vai trò (Role)</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var user in Model)
+                        {
+                            <tr>
+                                <td class="fw-bold text-primary">@user.Username</td>
+                                <td class="fw-medium">@user.FullName</td>
+                                <td>
+                                    @if (user.Role == "Admin")
+                                    {
+                                        <span class="badge bg-danger">Admin</span>
+                                    }
+                                    else if (user.Role == "Editor" || user.Role == "Moderator")
+                                    {
+                                        <span class="badge bg-warning text-dark">@user.Role</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">User</span>
+                                    }
+                                </td>
+                                <td>
+                                    <a class="btn btn-sm btn-warning" href="/User/Edit/@user.Id">Cập nhật quyền</a>
+                                    <a class="btn btn-sm btn-danger" href="/User/Delete/@user.Id" onclick="return confirm('Xóa thành viên này?')">Xóa</a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">Hệ thống chưa có thành viên nào.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
