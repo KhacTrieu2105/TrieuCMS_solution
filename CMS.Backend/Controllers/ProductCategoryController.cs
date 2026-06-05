@@ -5,55 +5,55 @@ using System.Linq;
 
 namespace CMS.Backend.Controllers
 {
-    public class CustomerController : Controller
+    public class ProductCategoryController : Controller
     {
         private readonly ApplicationDbContext _context;
 
-        public CustomerController(ApplicationDbContext context) => _context = context;
+        public ProductCategoryController(ApplicationDbContext context) => _context = context;
 
-        public IActionResult Index() => View(_context.Customers.ToList());
+        public IActionResult Index() => View(_context.CategoriesProducts.ToList());
 
         // --- CREATE ---
         public IActionResult Create() => View();
 
         [HttpPost]
-        public IActionResult Create(Customer customer)
+        public IActionResult Create(CategoryProduct model)
         {
             if (ModelState.IsValid)
             {
-                _context.Customers.Add(customer);
+                _context.CategoriesProducts.Add(model);
                 _context.SaveChanges();
                 return RedirectToAction(nameof(Index));
             }
-            return View(customer);
+            return View(model);
         }
 
         // --- EDIT ---
         public IActionResult Edit(int id)
         {
-            var customer = _context.Customers.Find(id);
-            return customer == null ? NotFound() : View(customer);
+            var item = _context.CategoriesProducts.Find(id);
+            return item == null ? NotFound() : View(item);
         }
 
         [HttpPost]
-        public IActionResult Edit(Customer customer)
+        public IActionResult Edit(CategoryProduct model)
         {
             if (ModelState.IsValid)
             {
-                _context.Customers.Update(customer);
+                _context.CategoriesProducts.Update(model);
                 _context.SaveChanges();
                 return RedirectToAction(nameof(Index));
             }
-            return View(customer);
+            return View(model);
         }
 
         // --- DELETE ---
         public IActionResult Delete(int id)
         {
-            var customer = _context.Customers.Find(id);
-            if (customer != null)
+            var item = _context.CategoriesProducts.Find(id);
+            if (item != null)
             {
-                _context.Customers.Remove(customer);
+                _context.CategoriesProducts.Remove(item);
                 _context.SaveChanges();
             }
             return RedirectToAction(nameof(Index));

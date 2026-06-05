@@ -1,0 +1,33 @@
+﻿@model CMS.Data.Entities.Product
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="container mt-4">
+    <h2>@(ViewContext.RouteData.Values["action"] == "Edit" ? "Chỉnh sửa" : "Thêm mới") sản phẩm</h2>
+    <form asp-action="@ViewContext.RouteData.Values["action"]" method="post">
+        @if (ViewContext.RouteData.Values["action"] == "Edit")
+        {
+            <input type="hidden" asp-for="Id" />
+        }
+
+        <div class="mb-3">
+            <label>Tên sản phẩm</label>
+            <input asp-for="Name" class="form-control" required />
+        </div>
+        <div class="mb-3">
+            <label>Giá</label>
+            <input asp-for="Price" type="number" class="form-control" />
+        </div>
+        <div class="mb-3">
+            <label>Số lượng</label>
+            <input asp-for="StockQuantity" type="number" class="form-control" />
+        </div>
+        <div class="mb-3">
+            <label>Mô tả</label>
+            <textarea asp-for="Description" class="form-control"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Lưu</button>
+        <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+    </form>
+</div>

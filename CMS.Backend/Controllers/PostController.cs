@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace CMS.Backend.Controllers
 {
-    [Authorize]
+   
     public class PostController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -50,7 +50,7 @@ namespace CMS.Backend.Controllers
 
             return View(post);
         }
-
+        [Authorize]
         // 4.1. Hàm [GET]: Hiển thị Form trống cho người dùng nhập
         [HttpGet]
         public IActionResult Create()

@@ -61,5 +61,52 @@ namespace CMS.Backend.Controllers
 
             return Ok(post);
         }
+        // POST: api/posts (Thêm mới)
+        [HttpPost]
+        public IActionResult Create([FromBody] CMS.Data.Entities.Post post)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            // Gán ngày tạo tự động nếu Frontend chưa gửi lên
+            if (post.CreatedDate == default) post.CreatedDate = System.DateTime.Now;
+
+            _context.Posts.Add(post);
+            _context.SaveChanges();
+
+            return CreatedAtAction(nameof(GetDetail), new { id = post.Id }, post);
+        }
+
+        // PUT: api/posts/5 (Sửa)
+        [HttpPut("{id}")]
+        public IActionResult Update(int id, [FromBody] CMS.Data.Entities.Post post)
+        {
+            if (id != post.Id) return BadRequest("ID không khớp");
+
+            var existingPost = _context.Posts.Find(id);
+            if (existingPost == null) return NotFound();
+
+            // Cập nhật thông tin
+            existingPost.Title = post.Title;
+            existingPost.ImageUrl = post.ImageUrl;
+            existingPost.Content = post.Content;
+            existingPost.CategoryId = post.CategoryId;
+            // Không cập nhật CreatedDate để giữ nguyên ngày tạo gốc
+
+            _context.SaveChanges();
+            return NoContent();
+        }
+
+        // DELETE: api/posts/5 (Xóa)
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            var post = _context.Posts.Find(id);
+            if (post == null) return NotFound();
+
+            _context.Posts.Remove(post);
+            _context.SaveChanges();
+
+            return Ok(new { message = "Đã xóa bài viết thành công" });
+        }
     }
 }

@@ -1,0 +1,25 @@
+﻿@model CMS.Data.Entities.Customer
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="container mt-4">
+    <h2>@(Model?.Id > 0 ? "Sửa" : "Thêm") khách hàng</h2>
+    <form asp-action="@(Model?.Id > 0 ? "Edit" : "Create")" method="post">
+        <input type="hidden" asp-for="Id" />
+        <div class="mb-3">
+            <label>Họ tên</label>
+            <input asp-for="FullName" class="form-control" required />
+        </div>
+        <div class="mb-3">
+            <label>Email</label>
+            <input asp-for="Email" class="form-control" type="email" />
+        </div>
+        <div class="mb-3">
+            <label>Số điện thoại</label>
+            <input asp-for="Phone" class="form-control" />
+        </div>
+        <button type="submit" class="btn btn-primary">Lưu</button>
+        <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+    </form>
+</div>

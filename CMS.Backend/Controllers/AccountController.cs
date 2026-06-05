@@ -38,10 +38,11 @@ public class AccountController : Controller
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
                 new ClaimsPrincipal(claimsIdentity));
 
-            if (user.Role == "Admin")
+            if (user.Role == "Admin" || user.Role =="Editor")
             {
-                return RedirectToAction("Index", "User");
+                return RedirectToAction("Index", "category");
             }
+           
             else
             {
                 return RedirectToAction("Index", "Home");

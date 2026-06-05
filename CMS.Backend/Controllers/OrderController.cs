@@ -1,7 +1,8 @@
-﻿using CMS.Backend;
+﻿using Microsoft.AspNetCore.Mvc;
 using CMS.Data;
-using Microsoft.AspNetCore.Mvc;
+using CMS.Data.Entities;
 using System.Linq;
+using System;
 
 namespace CMS.Backend.Controllers
 {
@@ -9,16 +10,44 @@ namespace CMS.Backend.Controllers
     {
         private readonly ApplicationDbContext _context;
 
-        public OrderController(ApplicationDbContext context)
+        public OrderController(ApplicationDbContext context) => _context = context;
+
+        public IActionResult Index() => View(_context.Orders.ToList());
+
+        // --- SỬA (Edit) ---
+        public IActionResult Edit(int id)
         {
-            _context = context;
+            var order = _context.Orders.Find(id);
+            return order == null ? NotFound() : View(order);
         }
 
-        public IActionResult Index()
+        [HttpPost]
+        public IActionResult Edit(Order order)
         {
-            // Lấy danh sách đơn hàng từ database
-            var orders = _context.Orders.ToList();
-            return View(orders);
+            if (ModelState.IsValid)
+            {
+                var existingOrder = _context.Orders.Find(order.Id);
+                if (existingOrder != null)
+                {
+                    existingOrder.Status = order.Status; // Ví dụ: Cập nhật trạng thái
+                    existingOrder.Notes = order.Notes;
+                    _context.SaveChanges();
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            return View(order);
+        }
+
+        // --- XÓA (Delete) ---
+        public IActionResult Delete(int id)
+        {
+            var order = _context.Orders.Find(id);
+            if (order != null)
+            {
+                _context.Orders.Remove(order);
+                _context.SaveChanges();
+            }
+            return RedirectToAction(nameof(Index));
         }
     }
 }

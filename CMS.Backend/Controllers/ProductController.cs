@@ -1,6 +1,6 @@
-﻿using CMS.Backend; // Đảm bảo namespace này trỏ đúng đến file ApplicationDbContext của bạn
+﻿using Microsoft.AspNetCore.Mvc;
 using CMS.Data;
-using Microsoft.AspNetCore.Mvc;
+using CMS.Data.Entities;
 using System.Linq;
 
 namespace CMS.Backend.Controllers
@@ -9,17 +9,54 @@ namespace CMS.Backend.Controllers
     {
         private readonly ApplicationDbContext _context;
 
-        public ProductController(ApplicationDbContext context)
+        public ProductController(ApplicationDbContext context) => _context = context;
+
+        public IActionResult Index() => View(_context.Products.ToList());
+
+        // --- THÊM ---
+        public IActionResult Create() => View();
+
+        [HttpPost]
+        public IActionResult Create(Product product)
         {
-            _context = context;
+            if (ModelState.IsValid)
+            {
+                _context.Products.Add(product);
+                _context.SaveChanges();
+                return RedirectToAction(nameof(Index));
+            }
+            return View(product);
         }
 
-        // Action hiển thị danh sách sản phẩm
-        public IActionResult Index()
+        // --- SỬA ---
+        public IActionResult Edit(int id)
         {
-            // Lấy toàn bộ danh sách sản phẩm từ SQL Server thông qua DbContext
-            var products = _context.Products.ToList();
-            return View(products);
+            var product = _context.Products.Find(id);
+            return product == null ? NotFound() : View(product);
+        }
+
+        [HttpPost]
+        public IActionResult Edit(Product product)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.Products.Update(product);
+                _context.SaveChanges();
+                return RedirectToAction(nameof(Index));
+            }
+            return View(product);
+        }
+
+        // --- XÓA ---
+        public IActionResult Delete(int id)
+        {
+            var product = _context.Products.Find(id);
+            if (product != null)
+            {
+                _context.Products.Remove(product);
+                _context.SaveChanges();
+            }
+            return RedirectToAction(nameof(Index));
         }
     }
 }

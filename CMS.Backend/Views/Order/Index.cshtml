@@ -1,55 +1,39 @@
 ﻿@model IEnumerable<CMS.Data.Entities.Order>
-
 @{
-    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
-    ViewData["Title"] = "Tên trang của bạn";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml"; ViewData["Title"] = "Quản lý đơn hàng";
 }
 
 <div class="container mt-4">
-    <h2 class="mb-3 text-success">📦 Bài tập 6: Danh sách đơn hàng</h2>
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <table class="table table-hover table-striped align-middle">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Mã Đơn hàng</th>
-                        <th>Mã Khách hàng</th>
-                        <th>Ngày đặt hàng</th>
-                        <th>Trạng thái (Status)</th>
-                        <th>Ghi chú (Notes)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model != null && Model.Any())
-                    {
-                        foreach (var item in Model)
-                        {
-                            <tr>
-                                <td class="fw-bold">#@item.Id</td>
-                                <td>KH-0@item.CustomerId</td>
-                                <td>@item.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
-                                <td>
-                                    @if (item.Status == 0)
-                                    {
-                                        <span class="badge bg-warning text-dark">Mới tạo</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-success">@item.Status</span>
-                                    }
-                                </td>
-                                <td class="text-muted">@item.Notes</td>
-                            </tr>
-                        }
-                    }
-                    else
-                    {
-                        <tr>
-                            <td colspan="5" class="text-center text-muted py-3">Chưa có dữ liệu đơn hàng.</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    </div>
+    <h2>Danh sách đơn hàng</h2>
+    <table class="table table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Ngày đặt</th>
+                <th>Trạng thái</th>
+                <th>Ghi chú</th>
+                <th class="text-center">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.OrderDate.ToString("dd/MM/yyyy")</td>
+                    <td>
+                        <span class="badge @(item.Status == 0 ? "bg-warning" : "bg-success")">
+                            @(item.Status == 0 ? "Chờ xử lý" : "Đã xong")
+                        </span>
+                    </td>
+                    <td>@item.Notes</td>
+                    <td class="text-center">
+                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Sửa</a>
+                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger"
+                           onclick="return confirm('Xóa đơn này?')">Xóa</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 </div>
