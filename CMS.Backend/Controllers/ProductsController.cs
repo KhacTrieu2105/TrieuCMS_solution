@@ -85,5 +85,13 @@ namespace CMS.Backend.Controllers
 
             return Ok(new { message = "Đã xóa sản phẩm thành công" });
         }
+        [HttpGet("GetByCategory/{categoryId}")]
+        public IActionResult GetByCategory(int categoryId)
+        {
+            var products = _context.Products
+                                   .Where(p => p.CategoryProductId == categoryId)
+                                   .ToList();
+            return Ok(products);
+        }
     }
 }

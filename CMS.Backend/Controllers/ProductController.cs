@@ -78,35 +78,42 @@ namespace CMS.Backend.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(Product product, IFormFile uploadImage)
+        public IActionResult Edit(Product product, IFormFile? uploadImage)
         {
+            // Kiểm tra xem ID có hợp lệ không trước khi quan tâm tới toàn bộ model
+            var existingProduct = _context.Products.Find(product.Id);
+            if (existingProduct == null) return NotFound();
+
+            // Cập nhật các trường thông tin cơ bản
+            existingProduct.Name = product.Name;
+            existingProduct.Price = product.Price;
+            existingProduct.StockQuantity = product.StockQuantity;
+            existingProduct.Description = product.Description;
+
+            // Đảm bảo cập nhật Category
+            existingProduct.CategoryProductId = product.CategoryProductId;
+
+            // Xử lý ảnh
+            if (uploadImage != null && uploadImage.Length > 0)
+            {
+                string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads");
+                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+                string fileName = Guid.NewGuid().ToString() + Path.GetExtension(uploadImage.FileName);
+                string filePath = Path.Combine(uploadsFolder, fileName);
+                using (var stream = new FileStream(filePath, FileMode.Create)) { uploadImage.CopyTo(stream); }
+                existingProduct.ImageUrl = "/uploads/" + fileName;
+            }
+
+            // Gỡ bỏ validation cho những trường không cần thiết nếu vẫn bị chặn
+            ModelState.Remove("uploadImage");
+
             if (ModelState.IsValid)
             {
-                var existingProduct = _context.Products.Find(product.Id);
-                if (existingProduct == null) return NotFound();
-
-                if (uploadImage != null && uploadImage.Length > 0)
-                {
-                    string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads");
-                    if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
-
-                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(uploadImage.FileName);
-                    string filePath = Path.Combine(uploadsFolder, fileName);
-                    using (var stream = new FileStream(filePath, FileMode.Create)) { uploadImage.CopyTo(stream); }
-                    existingProduct.ImageUrl = "/uploads/" + fileName;
-                }
-
-                // Cập nhật các trường thông tin
-                existingProduct.Name = product.Name;
-                existingProduct.Price = product.Price;
-                existingProduct.StockQuantity = product.StockQuantity;
-                existingProduct.Description = product.Description;
-                existingProduct.CategoryProductId = product.CategoryProductId; // Quan trọng
-
-                _context.Products.Update(existingProduct);
                 _context.SaveChanges();
                 return RedirectToAction(nameof(Index));
             }
+
+            // Nếu vẫn lỗi, load lại danh mục và trả về view
             LoadCategories(product.CategoryProductId);
             return View(product);
         }
@@ -123,5 +130,7 @@ namespace CMS.Backend.Controllers
             }
             return RedirectToAction(nameof(Index));
         }
+     
     }
+
 }

@@ -1,20 +1,24 @@
-﻿import axiosClient from '../api/axiosClient';
+﻿import axios from 'axios'; // Đảm bảo bạn đã import axios hoặc axiosClient
+import axiosClient from '../api/axiosClient';
+
+const API_URL = "https://localhost:7186";
 
 const productService = {
-    // Sửa lại đúng đường dẫn: /Products
+    // 1. Lấy tất cả sản phẩm
     getAllProducts: () => {
         return axiosClient.get('/Products');
     },
 
-    // Sửa lại đúng đường dẫn: /Products/categoryproduct/{id}
-    //getByCategory: (categoryId) => {
-    //    return axiosClient.get(`/Products/categoryproduct/${categoryId}`);
-    //}
+    getProductsByCategory: async (categoryId) => {
+        // Sửa 'product' thành 'Products' (thêm chữ 's')
+        // Sửa 'GetByCategory' thành 'categoryproduct' để khớp với Route bạn đã định nghĩa
+        const response = await axios.get(`https://localhost:7186/api/Products/categoryproduct/${categoryId}`);
+        return response.data;
+    },
+    // 3. Lấy sản phẩm chi tiết theo ID
     getProductById: (id) => {
-        // Hãy kiểm tra xem API của bạn thực tế là /Products/${id} hay /api/Products/${id}
         return axiosClient.get(`/Products/${id}`);
     }
-
 };
 
 export default productService;
