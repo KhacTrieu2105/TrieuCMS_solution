@@ -5,6 +5,9 @@ import ProductDetail from './pages/product-detail';
 import BlogPage from './pages/blog'; // Đây là tên bạn đã import
 import Header from './components/Header';
 import Footer from './components/Footer';
+import CartPage from './pages/cart';
+import CheckoutPage from './pages/checkout';
+import './assets/theme.css';
 
 function App() {
     return (
@@ -17,6 +20,8 @@ function App() {
                     <Route path="/Product/Details/:id" element={<ProductDetail />} />
                     {/* SỬA CHỖ NÀY: Dùng BlogPage thay vì PostDetail */}
                     <Route path="/Post/Details/:id" element={<BlogPage />} />
+                    <Route path="/cart" element={<CartPage />} />
+                    <Route path="/checkout" element={<CheckoutPage />} />
                 </Routes>
             </main>
             <Footer />

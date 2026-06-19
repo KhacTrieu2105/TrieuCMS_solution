@@ -26,24 +26,28 @@ export const PostList = () => {
         <div className="row g-4">
             {posts.map(post => (
                 <div key={post.id} className="col-md-4">
-                    <div className="card h-100 border-0">
-                        <img
-                            src={`${API_URL}${post.imageUrl}`}
-                            className="card-img-top"
-                            alt={post.title}
-                            style={{ height: "200px", objectFit: "cover" }}
-                        />
-                        <div className="card-body px-0">
-                            <h5 className="card-title fw-bold">{post.title}</h5>
-                            <p className="card-text text-muted small">
+                    <div className="card h-100 border-0 shadow-sm rounded-4 overflow-hidden" style={{ transition: '0.3s' }}>
+                        <div style={{ height: "200px", overflow: 'hidden' }}>
+                            <img
+                                src={`${API_URL}${post.imageUrl}`}
+                                className="card-img-top h-100"
+                                alt={post.title}
+                                style={{ objectFit: "cover", transition: '0.5s' }}
+                                onMouseOver={e => e.target.style.transform = "scale(1.08)"}
+                                onMouseOut={e => e.target.style.transform = "scale(1)"}
+                            />
+                        </div>
+                        <div className="card-body p-4">
+                            <span className="badge bg-light text-primary mb-2">Công nghệ</span>
+                            <h5 className="card-title fw-bold text-truncate">{post.title}</h5>
+                            <p className="card-text text-muted small lh-lg" style={{ height: "60px", overflow: 'hidden' }}>
                                 {post.shortDescription?.substring(0, 80)}...
                             </p>
                             <Link
                                 to={`/Post/Details/${post.id}`}
-                                className="btn btn-outline-danger btn-sm w-100 mt-2"
-                                style={{ borderRadius: '4px' }}
+                                className="btn btn-outline-primary btn-sm w-100 mt-3 rounded-pill"
                             >
-                                Đọc bài viết ➔
+                                Đọc chi tiết
                             </Link>
                         </div>
                     </div>
@@ -74,16 +78,27 @@ const BlogPage = () => {
         fetchPost();
     }, [id]);
 
-    if (loading) return <div className="text-center p-5">Đang tải bài viết...</div>;
+    if (loading) return (
+        <div className="d-flex justify-content-center p-5">
+            <div className="spinner-border text-primary" role="status"></div>
+        </div>
+    );
 
     return (
-        <div className="container py-4">
-            <div className="row g-4">
+        <div className="container py-5">
+            <div className="row g-5">
+                {/* Nội dung bài viết */}
                 <div className="col-lg-8">
-                    <BlogDetail post={post} />
+                    <div className="bg-white p-4 p-md-5 shadow-sm rounded-4 border">
+                        <BlogDetail post={post} />
+                    </div>
                 </div>
+
+                {/* Sidebar */}
                 <div className="col-lg-4">
-                    <BlogSidebar />
+                    <div className="sticky-top" style={{ top: '100px' }}>
+                        <BlogSidebar />
+                    </div>
                 </div>
             </div>
         </div>

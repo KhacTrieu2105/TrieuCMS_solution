@@ -1,24 +1,11 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿import React, { useState } from 'react';
 import ShopSidebar from './ShopSidebar';
 import ShopHeader from './ShopHeader';
-import LoadingOrEmpty from './LoadingOrEmpty';
 import ProductList from './ProductList';
-import productService from '../../services/productService';
 
 const Shop = () => {
+    // Chỉ giữ state categoryId ở đây để truyền xuống
     const [categoryId, setCategoryId] = useState(null);
-    const [products, setProducts] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const loadProducts = async () => {
-            setLoading(true);
-            const data = await productService.getAllProducts(); // Giả định service trả về data
-            setProducts(data || []);
-            setLoading(false);
-        };
-        loadProducts();
-    }, [categoryId]);
 
     return (
         <div className="container py-4">
@@ -27,9 +14,8 @@ const Shop = () => {
                     <ShopSidebar onSelectCategory={setCategoryId} />
                 </div>
                 <div className="col-lg-9">
-                    <ShopHeader count={products.length} />
-                    <LoadingOrEmpty isLoading={loading} isEmpty={products.length === 0} />
-                    {!loading && <ProductList products={products} />}
+                    {/* Truyền categoryId xuống để ProductList tự quản lý việc lấy dữ liệu */}
+                    <ProductList categoryId={categoryId} />
                 </div>
             </div>
         </div>

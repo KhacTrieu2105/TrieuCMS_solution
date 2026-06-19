@@ -4,16 +4,20 @@ import productService from '../../services/productService';
 
 const API_URL = "https://localhost:7186";
 
-const ProductList = ({ categoryId }) => { // 1. Nhận categoryId từ App.js
+const ProductList = ({ categoryId }) => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    // Hàm thông báo tính năng đang phát triển
+    const handleFeatureDevelopment = () => {
+        alert("Tính năng mua hàng đang được cập nhật. Vui lòng quay lại sau!");
+    };
 
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
             try {
                 let data;
-                // 2. Kiểm tra nếu có categoryId thì gọi API theo danh mục, ngược lại gọi tất cả
                 if (categoryId) {
                     data = await productService.getProductsByCategory(categoryId);
                 } else {
@@ -28,47 +32,44 @@ const ProductList = ({ categoryId }) => { // 1. Nhận categoryId từ App.js
         };
 
         fetchData();
-    }, [categoryId]); // 3. Chạy lại useEffect mỗi khi categoryId thay đổi
+    }, [categoryId]);
 
-    if (loading) {
-        return <div className="text-center my-4">Đang tải sản phẩm...</div>;
-    }
+    if (loading) return <div className="text-center py-5">Đang tải sản phẩm...</div>;
 
     return (
-        <div className="row row-cols-1 row-cols-md-4 g-3">
+        <div className="row row-cols-1 row-cols-md-3 g-4">
             {products.length > 0 ? (
                 products.map(product => (
                     <div key={product.id} className="col">
-                        <div className="card h-100 shadow-sm border-0 transition-card">
+                        <div className="card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
                             <img
                                 src={`${API_URL}${product.imageUrl}`}
-                                className="card-img-top p-2"
+                                className="card-img-top"
                                 alt={product.name}
-                                style={{ height: "180px", objectFit: "contain" }}
+                                style={{ height: "200px", objectFit: "cover" }}
                             />
-                            <div className="card-body d-flex flex-column">
-                                <h6 className="card-title" style={{ fontSize: '0.9rem', height: '40px' }}>
-                                    {product.name}
-                                </h6>
-                                <p className="text-danger fw-bold mb-2">
-                                    {product.price?.toLocaleString('vi-VN')} ₫
-                                </p>
-                                <div className="d-flex gap-1 mt-auto">
-                                    <Link
-                                        to={`/Product/Details/${product.id}`}
-                                        className="btn btn-sm btn-outline-primary w-50"
-                                    >
+                            <div className="card-body">
+                                <h6 className="fw-bold text-truncate">{product.name}</h6>
+                                <p className="text-danger fw-bold">{product.price?.toLocaleString('vi-VN')} ₫</p>
+                                <div className="d-flex gap-2">
+                                    <Link to={`/Product/Details/${product.id}`} className="btn btn-sm btn-outline-primary flex-grow-1">
                                         Chi tiết
                                     </Link>
-                                    <button className="btn btn-sm btn-primary w-50">Mua ngay</button>
+                                    {/* Nút Mua ngay được gán hàm thông báo */}
+                                    <button
+                                        className="btn btn-sm btn-primary flex-grow-1"
+                                        onClick={handleFeatureDevelopment}
+                                    >
+                                        Mua ngay
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 ))
             ) : (
-                <div className="col-12 text-center my-4">
-                    <p>Không có sản phẩm nào trong danh mục này.</p>
+                <div className="col-12 text-center py-5">
+                    <p className="text-muted">Không có sản phẩm nào trong danh mục này.</p>
                 </div>
             )}
         </div>
