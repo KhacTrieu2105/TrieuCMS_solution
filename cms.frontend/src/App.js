@@ -7,6 +7,8 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import CartPage from './pages/cart';
 import CheckoutPage from './pages/checkout';
+import LoginPage from './pages/auth/LoginPage';
+import RegisterPage from './pages/auth/RegisterPage';
 import './assets/theme.css';
 
 function App() {
@@ -22,6 +24,8 @@ function App() {
                     <Route path="/Post/Details/:id" element={<BlogPage />} />
                     <Route path="/cart" element={<CartPage />} />
                     <Route path="/checkout" element={<CheckoutPage />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/register" element={<RegisterPage />} />
                 </Routes>
             </main>
             <Footer />

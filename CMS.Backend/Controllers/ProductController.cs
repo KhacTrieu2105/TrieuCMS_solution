@@ -1,12 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using CMS.Data;
+﻿using CMS.Data;
 using CMS.Data.Entities;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using System.Linq;
-using System.IO;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
+using System.IO;
+using System.Linq;
+using X.PagedList;
+using X.PagedList.Extensions;
 
 namespace CMS.Backend.Controllers
 {
@@ -28,9 +30,17 @@ namespace CMS.Backend.Controllers
         }
 
         // --- INDEX ---
-        public IActionResult Index()
+        // --- INDEX ---
+        public IActionResult Index(int? page)
         {
-            var products = _context.Products.ToList();
+            int pageSize = 5; // Số sản phẩm trên 1 trang
+            int pageNumber = (page ?? 1);
+
+            // Đảm bảo không gọi .ToList() trước khi gọi .ToPagedList()
+            var products = _context.Products
+                                   .OrderByDescending(p => p.Id) // Luôn cần OrderBy trước khi phân trang
+                                   .ToPagedList(pageNumber, pageSize);
+
             return View(products);
         }
 

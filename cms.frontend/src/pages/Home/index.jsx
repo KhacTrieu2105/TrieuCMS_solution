@@ -10,14 +10,15 @@ const Home = () => {
     return (
         <div className="container py-4">
             <HeroBanner />
-            <div className="row g-4">
-                <div className="col-lg-2">
-                    <CategoryMenu onSelect={setCategoryId} />
-                </div>
-                <div className="col-lg-10">
-                    <ProductGrid categoryId={categoryId} />
-                </div>
+
+            {/* Đưa danh mục lên trên và dàn ngang */}
+            <div className="mb-4">
+                <CategoryMenu onSelect={setCategoryId} />
             </div>
+
+            {/* ProductGrid sẽ nằm trọn chiều ngang bên dưới */}
+            <ProductGrid categoryId={categoryId} />
+
             <LatestBlog />
         </div>
     );

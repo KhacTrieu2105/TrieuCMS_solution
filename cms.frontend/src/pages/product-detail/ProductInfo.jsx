@@ -2,7 +2,6 @@
 import { useNavigate } from 'react-router-dom';
 
 const API_URL = "https://localhost:7186";
-const CART_STORAGE_KEY = 'trieucms_cart';
 
 const ribbonLabel = (categoryType) => {
     if (categoryType === 'tech') return 'Công nghệ';
@@ -10,8 +9,15 @@ const ribbonLabel = (categoryType) => {
     return null;
 };
 
-// Thêm sản phẩm vào giỏ hàng (đồng bộ cùng key với src/pages/cart)
+// Hàm xử lý thêm vào giỏ hàng sử dụng key động
 const addToCart = (product, quantity) => {
+    // 1. Lấy thông tin khách hàng hiện tại từ localStorage
+    const customer = JSON.parse(localStorage.getItem('customer'));
+    const customerId = customer ? customer.id : 'guest';
+
+    // 2. Sử dụng khóa động giống hệt logic trong CartPage.jsx
+    const CART_STORAGE_KEY = `trieucms_cart_${customerId}`;
+
     let cart = [];
     try {
         const raw = localStorage.getItem(CART_STORAGE_KEY);
@@ -44,13 +50,9 @@ const ProductInfo = ({ product }) => {
 
     if (!product) return null;
 
-    const {
-        name, imageUrl, price, oldPrice, description, rating, categoryType, sku,
-    } = product;
+    const { name, imageUrl, price, oldPrice, description, rating, categoryType, sku } = product;
 
-    const discount = oldPrice && oldPrice > price
-        ? Math.round(((oldPrice - price) / oldPrice) * 100)
-        : null;
+    const discount = oldPrice && oldPrice > price ? Math.round(((oldPrice - price) / oldPrice) * 100) : null;
     const label = ribbonLabel(categoryType);
 
     const handleAddToCart = () => {
@@ -113,12 +115,6 @@ const ProductInfo = ({ product }) => {
                     <button type="button" className="btn-buy-now" onClick={handleBuyNow}>
                         Mua ngay
                     </button>
-                </div>
-
-                <div className="product-trust-badges">
-                    <span><i className="bi bi-patch-check"></i> Hàng chính hãng 100%</span>
-                    <span><i className="bi bi-arrow-repeat"></i> Đổi trả trong 7 ngày</span>
-                    <span><i className="bi bi-truck"></i> Giao nhanh toàn quốc</span>
                 </div>
             </div>
         </div>

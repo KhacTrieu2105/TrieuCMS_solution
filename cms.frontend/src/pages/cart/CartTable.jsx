@@ -1,7 +1,6 @@
 ﻿import React from 'react';
 
 const API_URL = "https://localhost:7186";
-
 const formatVND = (n) => `${n.toLocaleString('vi-VN')} ₫`;
 
 const ribbonLabel = (categoryType) => {
@@ -10,12 +9,11 @@ const ribbonLabel = (categoryType) => {
     return null;
 };
 
-// Bảng danh sách sản phẩm trong giỏ — nút tăng/giảm số lượng, nút xoá
 const CartTable = ({ items, onIncrease, onDecrease, onRemove }) => {
     if (!items || items.length === 0) {
         return (
-            <div className="cart-empty">
-                <i className="bi bi-cart-x"></i>
+            <div className="cart-empty text-center py-5">
+                <i className="bi bi-cart-x" style={{ fontSize: '3rem' }}></i>
                 <p>Giỏ hàng của bạn đang trống.</p>
             </div>
         );
@@ -23,66 +21,43 @@ const CartTable = ({ items, onIncrease, onDecrease, onRemove }) => {
 
     return (
         <div className="cart-table">
-            <div className="cart-table-head d-none d-md-flex">
-                <span className="col-product">Sản phẩm</span>
-                <span className="col-price">Đơn giá</span>
-                <span className="col-qty">Số lượng</span>
-                <span className="col-total">Tạm tính</span>
-                <span className="col-remove"></span>
+            <div className="cart-table-head d-none d-md-flex p-3 border-bottom font-weight-bold">
+                <span className="col-product flex-grow-1">Sản phẩm</span>
+                <span className="col-price" style={{ width: '150px' }}>Đơn giá</span>
+                <span className="col-qty" style={{ width: '150px' }}>Số lượng</span>
+                <span className="col-total" style={{ width: '150px' }}>Tạm tính</span>
+                <span className="col-remove" style={{ width: '50px' }}></span>
             </div>
 
-            {items.map((item) => {
-                const label = ribbonLabel(item.categoryType);
-                return (
-                    <div className="cart-row" key={item.id}>
-                        <div className="col-product">
-                            <img src={`${API_URL}${item.imageUrl}`} alt={item.name} />
-                            <div>
-                                <p className="cart-item-name" title={item.name}>{item.name}</p>
-                                {label && (
-                                    <span className={`category-ribbon ribbon-${item.categoryType} cart-ribbon`}>
-                                        {label}
-                                    </span>
-                                )}
-                            </div>
+            {items.map((item) => (
+                <div className="cart-row d-flex align-items-center p-3 border-bottom" key={item.id}>
+                    <div className="col-product flex-grow-1 d-flex align-items-center">
+                        <img src={`${API_URL}${item.imageUrl}`} alt={item.name} style={{ width: '60px', marginRight: '15px' }} />
+                        <div>
+                            <p className="mb-0 font-weight-bold">{item.name}</p>
+                            {ribbonLabel(item.categoryType) && (
+                                <span className={`badge bg-info text-dark`}>{ribbonLabel(item.categoryType)}</span>
+                            )}
                         </div>
-
-                        <span className="col-price cart-mono">{formatVND(item.price)}</span>
-
-                        <div className="col-qty">
-                            <div className="qty-stepper">
-                                <button
-                                    type="button"
-                                    onClick={() => onDecrease(item.id)}
-                                    disabled={item.quantity <= 1}
-                                    aria-label="Giảm số lượng"
-                                >
-                                    <i className="bi bi-dash"></i>
-                                </button>
-                                <span>{item.quantity}</span>
-                                <button
-                                    type="button"
-                                    onClick={() => onIncrease(item.id)}
-                                    aria-label="Tăng số lượng"
-                                >
-                                    <i className="bi bi-plus"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <span className="col-total cart-mono">{formatVND(item.price * item.quantity)}</span>
-
-                        <button
-                            type="button"
-                            className="col-remove"
-                            onClick={() => onRemove(item.id)}
-                            aria-label={`Xoá ${item.name} khỏi giỏ hàng`}
-                        >
-                            <i className="bi bi-trash3"></i>
-                        </button>
                     </div>
-                );
-            })}
+
+                    <span className="col-price" style={{ width: '150px' }}>{formatVND(item.price)}</span>
+
+                    <div className="col-qty" style={{ width: '150px' }}>
+                        <div className="btn-group btn-group-sm">
+                            <button className="btn btn-outline-secondary" onClick={() => onDecrease(item.id)} disabled={item.quantity <= 1}>-</button>
+                            <span className="btn btn-light">{item.quantity}</span>
+                            <button className="btn btn-outline-secondary" onClick={() => onIncrease(item.id)}>+</button>
+                        </div>
+                    </div>
+
+                    <span className="col-total font-weight-bold" style={{ width: '150px' }}>{formatVND(item.price * item.quantity)}</span>
+
+                    <button className="btn btn-link text-danger" onClick={() => onRemove(item.id)} aria-label="Xoá">
+                        <i className="bi bi-trash3"></i>
+                    </button>
+                </div>
+            ))}
         </div>
     );
 };

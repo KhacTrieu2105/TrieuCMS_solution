@@ -1,24 +1,47 @@
 ﻿@model CMS.Data.Entities.Customer
 @{
     Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = (Model?.Id > 0 ? "Sửa" : "Thêm") + " khách hàng";
 }
 
 <div class="container mt-4">
-    <h2>@(Model?.Id > 0 ? "Sửa" : "Thêm") khách hàng</h2>
+    <h2>@ViewData["Title"]</h2>
+
     <form asp-action="@(Model?.Id > 0 ? "Edit" : "Create")" method="post">
-        <input type="hidden" asp-for="Id" />
+        @Html.AntiForgeryToken()
+
+        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+        @* <input type="hidden" asp-for="Id" /> *@
+
         <div class="mb-3">
-            <label>Họ tên</label>
-            <input asp-for="FullName" class="form-control" required />
+            <label class="form-label">Họ tên</label>
+            <input asp-for="FullName" class="form-control" />
+            <span asp-validation-for="FullName" class="text-danger"></span>
         </div>
+
         <div class="mb-3">
-            <label>Email</label>
-            <input asp-for="Email" class="form-control" type="email" />
+            <label class="form-label">Email</label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
         </div>
+
         <div class="mb-3">
-            <label>Số điện thoại</label>
+            <label class="form-label">Số điện thoại</label>
             <input asp-for="Phone" class="form-control" />
+            <span asp-validation-for="Phone" class="text-danger"></span>
         </div>
+
+        <div class="mb-3">
+            <label class="form-label">Mật khẩu</label>
+            <input asp-for="Password" class="form-control" type="password" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+            @if (Model?.Id > 0)
+            {
+                <small class="text-muted">Để trống nếu không muốn thay đổi mật khẩu.</small>
+            }
+        </div>
+
         <button type="submit" class="btn btn-primary">Lưu</button>
         <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
     </form>

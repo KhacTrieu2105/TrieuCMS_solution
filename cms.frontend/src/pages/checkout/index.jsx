@@ -1,19 +1,18 @@
 ﻿import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-// Đường dẫn này giả định file nằm ở src/pages/checkout/index.jsx
-// và axiosClient nằm ở src/api/axiosClient.js — chỉnh lại nếu cấu trúc khác.
 import axiosClient from '../../api/axiosClient';
 
-const CART_STORAGE_KEY = 'trieucms_cart';
 const FREE_SHIP_THRESHOLD = 500000;
 const SHIPPING_FEE = 30000;
+const ORDER_ENDPOINT = '/orders';
 
-// TODO: đổi lại đúng route API tạo đơn hàng bên ASP.NET của bạn
-const ORDER_ENDPOINT = '/api/orders';
-
+// Hàm load giỏ hàng theo đúng ID người dùng
 const loadCart = () => {
     try {
-        const raw = localStorage.getItem(CART_STORAGE_KEY);
+        const customer = JSON.parse(localStorage.getItem('customer'));
+        const customerId = customer ? customer.id : 'guest';
+        const CART_KEY = `trieucms_cart_${customerId}`;
+        const raw = localStorage.getItem(CART_KEY);
         return raw ? JSON.parse(raw) : [];
     } catch {
         return [];
@@ -29,8 +28,12 @@ const initialForm = {
     paymentMethod: 'cod',
 };
 
-// Form điền dữ liệu Customer và bấm nút đặt hàng (POST đơn hàng)
 const CheckoutPage = () => {
+    // Lấy ID người dùng để định nghĩa KEY chuẩn xác
+    const customer = JSON.parse(localStorage.getItem('customer'));
+    const customerId = customer ? customer.id : 'guest';
+    const CART_STORAGE_KEY = `trieucms_cart_${customerId}`;
+
     const [items] = useState(loadCart);
     const [form, setForm] = useState(initialForm);
     const [errors, setErrors] = useState({});
@@ -38,10 +41,7 @@ const CheckoutPage = () => {
     const [submitError, setSubmitError] = useState('');
     const [orderId, setOrderId] = useState(null);
 
-    const subtotal = useMemo(
-        () => items.reduce((sum, it) => sum + it.price * it.quantity, 0),
-        [items]
-    );
+    const subtotal = useMemo(() => items.reduce((sum, it) => sum + it.price * it.quantity, 0), [items]);
     const shippingFee = items.length === 0 ? 0 : subtotal >= FREE_SHIP_THRESHOLD ? 0 : SHIPPING_FEE;
     const total = subtotal + shippingFee;
 
@@ -67,204 +67,102 @@ const CheckoutPage = () => {
 
         if (items.length === 0 || !validate()) return;
 
+        // ... trong hàm handleSubmit
         const payload = {
-            customer: {
-                fullName: form.fullName.trim(),
-                phone: form.phone.trim(),
-                email: form.email.trim(),
-                address: form.address.trim(),
-                note: form.note.trim(),
-            },
-            paymentMethod: form.paymentMethod,
+            customerId: parseInt(customerId) || 0, // Cần gửi thêm field này để khớp với DTO
+            notes: form.note.trim() === '' ? 'Không có ghi chú' : form.note.trim(), // Đổi thành 'notes'
             items: items.map((it) => ({
-                productId: it.id,
-                quantity: it.quantity,
-                price: it.price,
+                productId: parseInt(it.id),
+                quantity: parseInt(it.quantity),
+                price: parseFloat(it.price),
             })),
-            shippingFee,
-            total,
+            // Tổng tiền thường được tính ở Backend, nếu cần gửi thì cứ để nguyên
         };
+        // ...
 
         try {
             setIsSubmitting(true);
             const res = await axiosClient.post(ORDER_ENDPOINT, payload);
+
+            // Xóa giỏ hàng đúng key của người dùng sau khi đặt hàng thành công
             localStorage.removeItem(CART_STORAGE_KEY);
-            setOrderId(res?.data?.id ?? res?.data?.orderId ?? 'N/A');
+
+            setOrderId(res?.data?.id ?? 'N/A');
         } catch (err) {
-            setSubmitError(
-                err?.response?.data?.message || 'Đặt hàng không thành công, vui lòng thử lại.'
-            );
+            console.error("Lỗi chi tiết từ Backend:", err.response?.data);
+            setSubmitError(err?.response?.data?.message || 'Đặt hàng không thành công.');
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    // Đặt hàng thành công
     if (orderId) {
         return (
-            <div className="container">
-                <div className="checkout-success">
-                    <i className="bi bi-check-circle"></i>
-                    <h4>Đặt hàng thành công!</h4>
-                    <p>Mã đơn hàng của bạn: <strong className="cart-mono">#{orderId}</strong></p>
-                    <p>Chúng tôi sẽ liên hệ qua số điện thoại bạn đã cung cấp để xác nhận đơn hàng.</p>
-                    <Link to="/" className="cart-continue">Về trang chủ</Link>
-                </div>
+            <div className="container py-5 text-center">
+                <i className="bi bi-check-circle text-success" style={{ fontSize: '3rem' }}></i>
+                <h4>Đặt hàng thành công!</h4>
+                <p>Mã đơn hàng của bạn: <strong>#{orderId}</strong></p>
+                <Link to="/" className="btn btn-primary mt-3">Về trang chủ</Link>
             </div>
         );
     }
 
-    // Giỏ hàng trống thì không có gì để thanh toán
     if (items.length === 0) {
         return (
-            <div className="container">
-                <div className="checkout-empty">
-                    <i className="bi bi-cart-x"></i>
-                    <p>Giỏ hàng đang trống, không có gì để thanh toán.</p>
-                    <Link to="/" className="cart-continue">Quay về trang chủ</Link>
-                </div>
+            <div className="container py-5 text-center">
+                <p>Giỏ hàng đang trống.</p>
+                <Link to="/" className="btn btn-outline-primary">Tiếp tục mua sắm</Link>
             </div>
         );
     }
 
     return (
-        <div className="container checkout-page">
-            <h4 className="cart-page-title">Thông tin thanh toán</h4>
-
+        <div className="container checkout-page py-4">
+            <h4 className="mb-4">Thông tin thanh toán</h4>
             <form className="checkout-layout" onSubmit={handleSubmit}>
                 <div className="checkout-form">
-                    <div className="form-group">
-                        <label htmlFor="fullName">Họ và tên</label>
-                        <input
-                            id="fullName"
-                            name="fullName"
-                            type="text"
-                            value={form.fullName}
-                            onChange={handleChange}
-                            className={errors.fullName ? 'is-invalid' : ''}
-                            placeholder="Nguyễn Văn A"
-                        />
-                        {errors.fullName && <span className="field-error">{errors.fullName}</span>}
+                    <div className="form-group mb-3">
+                        <label>Họ và tên</label>
+                        <input name="fullName" className={`form-control ${errors.fullName ? 'is-invalid' : ''}`} value={form.fullName} onChange={handleChange} />
+                        {errors.fullName && <div className="text-danger small">{errors.fullName}</div>}
                     </div>
-
-                    <div className="form-row">
-                        <div className="form-group">
-                            <label htmlFor="phone">Số điện thoại</label>
-                            <input
-                                id="phone"
-                                name="phone"
-                                type="tel"
-                                value={form.phone}
-                                onChange={handleChange}
-                                className={errors.phone ? 'is-invalid' : ''}
-                                placeholder="09xxxxxxxx"
-                            />
-                            {errors.phone && <span className="field-error">{errors.phone}</span>}
+                    <div className="row">
+                        <div className="col-md-6 mb-3">
+                            <label>Số điện thoại</label>
+                            <input name="phone" className={`form-control ${errors.phone ? 'is-invalid' : ''}`} value={form.phone} onChange={handleChange} />
+                            {errors.phone && <div className="text-danger small">{errors.phone}</div>}
                         </div>
-                        <div className="form-group">
-                            <label htmlFor="email">Email (không bắt buộc)</label>
-                            <input
-                                id="email"
-                                name="email"
-                                type="email"
-                                value={form.email}
-                                onChange={handleChange}
-                                placeholder="email@example.com"
-                            />
+                        <div className="col-md-6 mb-3">
+                            <label>Email</label>
+                            <input name="email" className="form-control" value={form.email} onChange={handleChange} />
                         </div>
                     </div>
-
-                    <div className="form-group">
-                        <label htmlFor="address">Địa chỉ nhận hàng</label>
-                        <input
-                            id="address"
-                            name="address"
-                            type="text"
-                            value={form.address}
-                            onChange={handleChange}
-                            className={errors.address ? 'is-invalid' : ''}
-                            placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành"
-                        />
-                        {errors.address && <span className="field-error">{errors.address}</span>}
+                    <div className="form-group mb-3">
+                        <label>Địa chỉ nhận hàng</label>
+                        <input name="address" className={`form-control ${errors.address ? 'is-invalid' : ''}`} value={form.address} onChange={handleChange} />
+                        {errors.address && <div className="text-danger small">{errors.address}</div>}
                     </div>
-
-                    <div className="form-group">
-                        <label htmlFor="note">Ghi chú (không bắt buộc)</label>
-                        <textarea
-                            id="note"
-                            name="note"
-                            rows="3"
-                            value={form.note}
-                            onChange={handleChange}
-                            placeholder="Ví dụ: giao giờ hành chính, gọi trước khi giao..."
-                        />
+                    <div className="form-group mb-3">
+                        <label>Ghi chú</label>
+                        <textarea name="note" className="form-control" value={form.note} onChange={handleChange} />
                     </div>
-
-                    <div className="form-group">
-                        <label>Phương thức thanh toán</label>
-                        <div className="payment-options">
-                            <label className={`payment-option ${form.paymentMethod === 'cod' ? 'active' : ''}`}>
-                                <input
-                                    type="radio"
-                                    name="paymentMethod"
-                                    value="cod"
-                                    checked={form.paymentMethod === 'cod'}
-                                    onChange={handleChange}
-                                />
-                                <i className="bi bi-cash-coin"></i>
-                                <div>
-                                    <strong>Thanh toán khi nhận hàng (COD)</strong>
-                                    <p>Trả tiền mặt cho shipper khi nhận hàng</p>
-                                </div>
-                            </label>
-                            <label className={`payment-option ${form.paymentMethod === 'bank' ? 'active' : ''}`}>
-                                <input
-                                    type="radio"
-                                    name="paymentMethod"
-                                    value="bank"
-                                    checked={form.paymentMethod === 'bank'}
-                                    onChange={handleChange}
-                                />
-                                <i className="bi bi-bank"></i>
-                                <div>
-                                    <strong>Chuyển khoản ngân hàng</strong>
-                                    <p>Thông tin chuyển khoản gửi qua email/SMS sau khi đặt hàng</p>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-
-                    {submitError && <div className="checkout-submit-error">{submitError}</div>}
+                    {submitError && <div className="alert alert-danger">{submitError}</div>}
                 </div>
 
-                <aside className="cart-summary checkout-summary">
+                <aside className="checkout-summary card p-3">
                     <h6>Đơn hàng của bạn</h6>
-                    <ul className="checkout-mini-list">
-                        {items.map((it) => (
-                            <li key={it.id}>
-                                <span>{it.name} <span className="cart-mono">× {it.quantity}</span></span>
-                                <span className="cart-mono">{(it.price * it.quantity).toLocaleString('vi-VN')} ₫</span>
-                            </li>
-                        ))}
-                    </ul>
                     <hr />
-                    <div className="cart-summary-row">
-                        <span>Tạm tính</span>
-                        <span className="cart-mono">{subtotal.toLocaleString('vi-VN')} ₫</span>
-                    </div>
-                    <div className="cart-summary-row">
-                        <span>Phí vận chuyển</span>
-                        <span className="cart-mono">
-                            {shippingFee === 0 ? 'Miễn phí' : `${shippingFee.toLocaleString('vi-VN')} ₫`}
-                        </span>
-                    </div>
+                    {items.map((it) => (
+                        <div key={it.id} className="d-flex justify-content-between mb-2">
+                            <span>{it.name} x {it.quantity}</span>
+                            <span>{(it.price * it.quantity).toLocaleString('vi-VN')} ₫</span>
+                        </div>
+                    ))}
                     <hr />
-                    <div className="cart-summary-row cart-summary-total">
-                        <span>Tổng cộng</span>
-                        <span className="cart-mono">{total.toLocaleString('vi-VN')} ₫</span>
-                    </div>
-
-                    <button type="submit" className="cart-checkout-btn" disabled={isSubmitting}>
+                    <div className="d-flex justify-content-between"><span>Tạm tính</span> <span>{subtotal.toLocaleString('vi-VN')} ₫</span></div>
+                    <div className="d-flex justify-content-between"><span>Vận chuyển</span> <span>{shippingFee === 0 ? 'Miễn phí' : `${shippingFee.toLocaleString('vi-VN')} ₫`}</span></div>
+                    <h5 className="mt-3">Tổng cộng: {total.toLocaleString('vi-VN')} ₫</h5>
+                    <button type="submit" className="btn btn-primary w-100 mt-3" disabled={isSubmitting}>
                         {isSubmitting ? 'Đang xử lý...' : 'Đặt hàng'}
                     </button>
                 </aside>

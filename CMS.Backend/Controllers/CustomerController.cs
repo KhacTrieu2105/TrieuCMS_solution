@@ -17,14 +17,18 @@ namespace CMS.Backend.Controllers
         public IActionResult Create() => View();
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Create(Customer customer)
         {
+            // Kiểm tra xem dữ liệu có đúng yêu cầu không
             if (ModelState.IsValid)
             {
                 _context.Customers.Add(customer);
                 _context.SaveChanges();
                 return RedirectToAction(nameof(Index));
             }
+
+            // Nếu có lỗi, trả về view với dữ liệu cũ để người dùng sửa
             return View(customer);
         }
 

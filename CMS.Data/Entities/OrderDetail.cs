@@ -19,6 +19,7 @@ namespace CMS.Data.Entities
 
         public int Quantity { get; set; }
 
+        [NotMapped]
         [Column(TypeName = "decimal(18,2)")]
         public decimal UnitPrice { get; set; } // Giá tại thời điểm mua
 
