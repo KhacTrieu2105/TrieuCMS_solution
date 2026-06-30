@@ -4,6 +4,11 @@ import axiosClient from '../api/axiosClient';
 const API_URL = "https://localhost:7186";
 
 const productService = {
+
+    getHotProducts: async () => {
+        const res = await axiosClient.get('/products/hot');
+        return res.data;
+    },
     // 1. Lấy tất cả sản phẩm
     getAllProducts: () => {
         return axiosClient.get('/Products');
@@ -19,6 +24,8 @@ const productService = {
     getProductById: (id) => {
         return axiosClient.get(`/Products/${id}`);
     }
+
+
 };
 
 export default productService;

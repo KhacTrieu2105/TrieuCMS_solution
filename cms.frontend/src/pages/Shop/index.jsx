@@ -1,21 +1,27 @@
 ﻿import React, { useState } from 'react';
 import ShopSidebar from './ShopSidebar';
-import ShopHeader from './ShopHeader';
 import ProductList from './ProductList';
 
 const Shop = () => {
-    // Chỉ giữ state categoryId ở đây để truyền xuống
     const [categoryId, setCategoryId] = useState(null);
+    // Thêm state cho giá
+    const [priceRange, setPriceRange] = useState({ min: 0, max: 10000000 });
 
     return (
         <div className="container py-4">
             <div className="row g-4">
                 <div className="col-lg-3">
-                    <ShopSidebar onSelectCategory={setCategoryId} />
+                    <ShopSidebar
+                        onSelectCategory={setCategoryId}
+                        onPriceChange={setPriceRange} // Truyền hàm để Sidebar cập nhật giá
+                    />
                 </div>
                 <div className="col-lg-9">
-                    {/* Truyền categoryId xuống để ProductList tự quản lý việc lấy dữ liệu */}
-                    <ProductList categoryId={categoryId} />
+                    {/* Truyền cả categoryId và priceRange xuống */}
+                    <ProductList
+                        categoryId={categoryId}
+                        priceRange={priceRange}
+                    />
                 </div>
             </div>
         </div>

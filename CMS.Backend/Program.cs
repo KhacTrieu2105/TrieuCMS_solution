@@ -1,8 +1,16 @@
-﻿using CMS.Data;
+﻿using CMS.API.Services;
+using CMS.Backend.Settings;
+using CMS.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+builder.Services.Configure<EmailSettings>(
+    builder.Configuration.GetSection("EmailSettings"));
+
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 // 1. Add services to the container.
 builder.Services.AddControllersWithViews();

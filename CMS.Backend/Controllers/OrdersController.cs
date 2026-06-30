@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using CMS.API.Services;
 using CMS.Data;
 using CMS.Data.Entities;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace CMS.Backend.Controllers
@@ -14,10 +15,13 @@ namespace CMS.Backend.Controllers
     public class OrdersController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-
-        public OrdersController(ApplicationDbContext context)
+        private readonly IEmailService _emailService;
+        public OrdersController(
+            ApplicationDbContext context,
+            IEmailService emailService)
         {
             _context = context;
+            _emailService = emailService;
         }
 
         [HttpPost]
@@ -64,7 +68,43 @@ namespace CMS.Backend.Controllers
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
+                decimal total = 0;
 
+                string body = $@"
+<h2>Cảm ơn bạn đã đặt hàng tại TrieuCMS</h2>
+
+<p><b>Mã đơn hàng:</b> {newOrder.Id}</p>
+
+<p><b>Ngày đặt:</b> {newOrder.OrderDate:dd/MM/yyyy HH:mm}</p>
+
+<p><b>Ghi chú:</b> {newOrder.Notes}</p>
+
+<table border='1' cellpadding='8' cellspacing='0'>
+<tr>
+<th>Sản phẩm</th>
+<th>Số lượng</th>
+<th>Đơn giá</th>
+</tr>";
+
+                foreach (var item in input.Items)
+                {
+                    var product = await _context.Products.FindAsync(item.ProductId);
+
+                    total += item.Price * item.Quantity;
+
+                    body += $@"
+<tr>
+<td>{product.Name}</td>
+<td>{item.Quantity}</td>
+<td>{item.Price:N0} VNĐ</td>
+</tr>";
+                }
+                body += $@"
+</table>
+
+<h3>Tổng tiền: {total:N0} VNĐ</h3>
+
+<p>Cảm ơn quý khách đã mua hàng!</p>";
                 return StatusCode(201, new { message = "Đặt hàng thành công!", id = newOrder.Id });
             }
             catch (Exception ex)
@@ -94,6 +134,8 @@ namespace CMS.Backend.Controllers
     public class OrderInputDTO
     {
         public int CustomerId { get; set; }
+
+        public string Email { get; set; }
         public string Notes { get; set; }
         public List<OrderItemDTO> Items { get; set; }
     }
@@ -101,6 +143,7 @@ namespace CMS.Backend.Controllers
     public class OrderItemDTO
     {
         public int ProductId { get; set; }
+
         public int Quantity { get; set; }
         public decimal Price { get; set; }
     }

@@ -93,5 +93,33 @@ namespace CMS.Backend.Controllers
                                    .ToList();
             return Ok(products);
         }
+
+        [HttpGet("hot")]
+        public async Task<IActionResult> GetHotProducts()
+        {
+            try
+            {
+                // Truy vấn từ bảng con OrderDetails để tránh lỗi null từ Product
+                var topProductIds = await _context.OrderDetails
+                    .GroupBy(od => od.ProductId)
+                    .OrderByDescending(g => g.Sum(od => od.Quantity))
+                    .Take(3)
+                    .Select(g => g.Key)
+                    .ToListAsync();
+
+                var hotProducts = await _context.Products
+                    .Where(p => topProductIds.Contains(p.Id))
+                    .Select(p => new { p.Id, p.Name, p.Price, p.ImageUrl })
+                    .ToListAsync();
+
+                return Ok(hotProducts);
+            }
+            catch (Exception ex)
+            {
+                // Log lỗi ra cửa sổ Visual Studio để xem chính xác bị gì
+                System.Diagnostics.Debug.WriteLine(ex.Message);
+                return StatusCode(500, "Internal Server Error");
+            }
+        }
     }
 }

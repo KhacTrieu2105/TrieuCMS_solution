@@ -39,6 +39,7 @@ const customerService = {
     logout: () => {
         return axiosClient.post('/CustomerAuth/logout');
     }
+
 };
 
 export default customerService;

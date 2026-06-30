@@ -3,24 +3,35 @@ import CategoryMenu from './CategoryMenu';
 import HeroBanner from './HeroBanner';
 import ProductGrid from './ProductGrid';
 import LatestBlog from './LatestBlog';
+import HotProducts from './HotProducts'; // Đảm bảo đường dẫn này đúng với vị trí file của bạn
 
 const Home = () => {
     const [categoryId, setCategoryId] = useState(null);
 
     return (
-        <div className="container py-4">
+        <div className="home-page">
+            {/* Hero Banner chiếm trọn chiều ngang */}
             <HeroBanner />
 
-            {/* Đưa danh mục lên trên và dàn ngang */}
-            <div className="mb-4">
-                <CategoryMenu onSelect={setCategoryId} />
+            {/* Khu vực sản phẩm bán chạy */}
+            <div className="my-4">
+                <HotProducts />
             </div>
 
-            {/* ProductGrid sẽ nằm trọn chiều ngang bên dưới */}
-            <ProductGrid categoryId={categoryId} />
+            <div className="container py-4">
+                {/* Danh mục */}
+                <div className="mb-4">
+                    <CategoryMenu onSelect={setCategoryId} />
+                </div>
 
-            <LatestBlog />
+                {/* Danh sách sản phẩm */}
+                <ProductGrid categoryId={categoryId} />
+
+                {/* Tin tức/Blog */}
+                <LatestBlog />
+            </div>
         </div>
     );
 };
+
 export default Home;

@@ -11,15 +11,11 @@ export const PostList = () => {
     const [posts, setPosts] = useState([]);
 
     useEffect(() => {
-        const fetchPosts = async () => {
-            try {
-                const data = await postService.getAllPosts();
-                setPosts(data || []);
-            } catch (error) {
-                console.error(error);
-            }
+        const loadPosts = async () => {
+            const data = await postService.getAllPosts();
+            setPosts(data);
         };
-        fetchPosts();
+        loadPosts();
     }, []);
 
     return (
@@ -96,7 +92,7 @@ const BlogPage = () => {
 
                 {/* Sidebar */}
                 <div className="col-lg-4">
-                    <div className="sticky-top" style={{ top: '100px' }}>
+                    <div style={{ position: 'sticky', top: '100px' }}>
                         <BlogSidebar />
                     </div>
                 </div>

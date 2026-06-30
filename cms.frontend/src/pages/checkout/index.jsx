@@ -52,45 +52,60 @@ const CheckoutPage = () => {
 
     const validate = () => {
         const next = {};
-        if (!form.fullName.trim()) next.fullName = 'Vui lòng nhập họ tên';
-        if (!/^0\d{9}$/.test(form.phone.trim())) {
-            next.phone = 'Số điện thoại không hợp lệ (10 số, bắt đầu bằng 0)';
-        }
-        if (!form.address.trim()) next.address = 'Vui lòng nhập địa chỉ nhận hàng';
+
+        if (!form.fullName.trim())
+            next.fullName = "Vui lòng nhập họ tên";
+
+        if (!/^0\d{9}$/.test(form.phone.trim()))
+            next.phone = "Số điện thoại không hợp lệ";
+
+        if (!form.email.trim())
+            next.email = "Vui lòng nhập Email";
+        else if (!/\S+@\S+\.\S+/.test(form.email))
+            next.email = "Email không hợp lệ";
+
+        if (!form.address.trim())
+            next.address = "Vui lòng nhập địa chỉ";
+
         setErrors(next);
+
         return Object.keys(next).length === 0;
     };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setSubmitError('');
+        setSubmitError("");
 
         if (items.length === 0 || !validate()) return;
 
-        // ... trong hàm handleSubmit
         const payload = {
-            customerId: parseInt(customerId) || 0, // Cần gửi thêm field này để khớp với DTO
-            notes: form.note.trim() === '' ? 'Không có ghi chú' : form.note.trim(), // Đổi thành 'notes'
+            customerId: parseInt(customerId) || 0,
+            email: form.email,
+            notes:
+                form.note.trim() === ""
+                    ? "Không có ghi chú"
+                    : form.note.trim(),
+
             items: items.map((it) => ({
                 productId: parseInt(it.id),
                 quantity: parseInt(it.quantity),
                 price: parseFloat(it.price),
             })),
-            // Tổng tiền thường được tính ở Backend, nếu cần gửi thì cứ để nguyên
         };
-        // ...
 
         try {
             setIsSubmitting(true);
+
             const res = await axiosClient.post(ORDER_ENDPOINT, payload);
 
-            // Xóa giỏ hàng đúng key của người dùng sau khi đặt hàng thành công
             localStorage.removeItem(CART_STORAGE_KEY);
 
-            setOrderId(res?.data?.id ?? 'N/A');
+            setOrderId(res?.data?.id ?? "N/A");
         } catch (err) {
-            console.error("Lỗi chi tiết từ Backend:", err.response?.data);
-            setSubmitError(err?.response?.data?.message || 'Đặt hàng không thành công.');
+            console.error(err);
+
+            setSubmitError(
+                err?.response?.data?.message || "Đặt hàng không thành công."
+            );
         } finally {
             setIsSubmitting(false);
         }
@@ -134,7 +149,19 @@ const CheckoutPage = () => {
                         </div>
                         <div className="col-md-6 mb-3">
                             <label>Email</label>
-                            <input name="email" className="form-control" value={form.email} onChange={handleChange} />
+
+                            <input
+                                name="email"
+                                className={`form-control ${errors.email ? "is-invalid" : ""}`}
+                                value={form.email}
+                                onChange={handleChange}
+                            />
+
+                            {errors.email &&
+                                <div className="text-danger small">
+                                    {errors.email}
+                                </div>
+                            }
                         </div>
                     </div>
                     <div className="form-group mb-3">

@@ -24,5 +24,6 @@ namespace CMS.Data.Entities
         public int CategoryProductId { get; set; }
         [ForeignKey("CategoryProductId")]
         public virtual CategoryProduct? ProductCategory { get; set; }
+        public virtual ICollection<OrderDetail>? OrderDetails { get; set; }
     }
 }

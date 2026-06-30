@@ -8,39 +8,49 @@ const SHIPPING_FEE = 30000;
 const CartPage = () => {
     const navigate = useNavigate();
 
-    // 1. Lấy thông tin customer
+    // 1. Lấy thông tin customer (Hooks phải nằm trên cùng)
     const customer = JSON.parse(localStorage.getItem('customer'));
-    const customerId = customer ? customer.id : 'guest';
+    const customerId = customer ? customer.id : null;
 
-    // 2. Định nghĩa CART_STORAGE_KEY
-    const CART_STORAGE_KEY = useMemo(() => `trieucms_cart_${customerId}`, [customerId]);
-
-    // 3. Khởi tạo giỏ hàng
+    // 2. Khởi tạo giỏ hàng (Hooks không được nằm sau lệnh return/if)
     const [items, setItems] = useState(() => {
         try {
-            const savedCart = localStorage.getItem(CART_STORAGE_KEY);
+            const savedCart = customerId ? localStorage.getItem(`trieucms_cart_${customerId}`) : null;
             return savedCart ? JSON.parse(savedCart) : [];
-        } catch {
-            return [];
-        }
+        } catch { return []; }
     });
 
-    // 4. Lưu giỏ hàng khi thay đổi
+    // 3. Effect kiểm tra đăng nhập
     useEffect(() => {
-        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
-    }, [items, CART_STORAGE_KEY]);
+        if (!customer) {
+            alert("Bạn cần đăng nhập để xem giỏ hàng!");
+            navigate('/login');
+        }
+    }, [customer, navigate]);
 
-    // Các hàm xử lý giỏ hàng đặt BÊN TRONG CartPage
+    // 4. Lưu giỏ hàng
+    useEffect(() => {
+        if (customerId) {
+            localStorage.setItem(`trieucms_cart_${customerId}`, JSON.stringify(items));
+            window.dispatchEvent(new Event("cartUpdated"));
+        }
+    }, [items, customerId]);
+
+    // 5. Memo hóa tính toán
+    const subtotal = useMemo(() => items.reduce((sum, it) => sum + it.price * it.quantity, 0), [items]);
+    const shippingFee = items.length === 0 ? 0 : (subtotal >= FREE_SHIP_THRESHOLD ? 0 : SHIPPING_FEE);
+
+    // 6. Sau khi tất cả hooks đã được gọi, mới thực hiện kiểm tra để return
+    if (!customer) return null;
+
+    // Các hàm xử lý giỏ hàng
     const increase = (id) => setItems(prev => prev.map(it => it.id === id ? { ...it, quantity: it.quantity + 1 } : it));
     const decrease = (id) => setItems(prev => prev.map(it => it.id === id && it.quantity > 1 ? { ...it, quantity: it.quantity - 1 } : it));
     const remove = (id) => setItems(prev => prev.filter(it => it.id !== id));
 
-    const subtotal = useMemo(() => items.reduce((sum, it) => sum + it.price * it.quantity, 0), [items]);
-    const shippingFee = items.length === 0 ? 0 : (subtotal >= FREE_SHIP_THRESHOLD ? 0 : SHIPPING_FEE);
-
     return (
         <div className="container py-4">
-            <h4>Giỏ hàng của bạn {customer ? `(Tài khoản: ${customer.fullName})` : '(Khách)'}</h4>
+            <h4>Giỏ hàng của bạn (Tài khoản: {customer.fullName})</h4>
             <div className="row">
                 <div className="col-lg-8">
                     <CartTable items={items} onIncrease={increase} onDecrease={decrease} onRemove={remove} />
