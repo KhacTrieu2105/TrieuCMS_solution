@@ -1,11 +1,33 @@
-﻿import React, { useState } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import ShopSidebar from './ShopSidebar';
 import ProductList from './ProductList';
+import productService from '../../services/productService';
 
 const Shop = () => {
+    const [products, setProducts] = useState([]);
+    const [priceRange, setPriceRange] = useState({
+        min: 0,
+        max: 999999999
+    });
     const [categoryId, setCategoryId] = useState(null);
-    // Thêm state cho giá
-    const [priceRange, setPriceRange] = useState({ min: 0, max: 10000000 });
+
+    useEffect(() => {
+
+        const loadProducts = async () => {
+
+            const data = await productService.filterProducts(
+                categoryId,
+                priceRange.min,
+                priceRange.max
+            );
+
+            setProducts(data);
+
+        };
+
+        loadProducts();
+
+    }, [categoryId, priceRange]);
 
     return (
         <div className="container py-4">

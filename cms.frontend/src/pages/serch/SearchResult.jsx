@@ -32,22 +32,35 @@ const SearchResult = () => {
     };
 
     useEffect(() => {
+
         const fetchResults = async () => {
+
             setLoading(true);
+
             try {
-                const allProducts = await productService.getAllProducts();
-                // Lọc sản phẩm theo tên (không phân biệt hoa thường)
-                const filtered = allProducts.filter(p =>
-                    p.name.toLowerCase().includes(query.toLowerCase())
-                );
-                setResults(filtered);
+
+                const data = await productService.searchProducts(query);
+
+                setResults(data);
+
             } catch (error) {
-                console.error("Lỗi tìm kiếm:", error);
+
+                console.log(error);
+
             } finally {
+
                 setLoading(false);
+
             }
+
         };
-        fetchResults();
+
+        if (query) {
+
+            fetchResults();
+
+        }
+
     }, [query]);
 
     return (

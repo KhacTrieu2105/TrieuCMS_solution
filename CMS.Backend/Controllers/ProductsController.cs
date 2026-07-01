@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using CMS.Data;
+using CMS.Data.Entities;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using CMS.Data;
 
 namespace CMS.Backend.Controllers
 {
@@ -121,5 +122,46 @@ namespace CMS.Backend.Controllers
                 return StatusCode(500, "Internal Server Error");
             }
         }
+
+        [HttpGet("search")]
+        public async Task<IActionResult> Search(string keyword)
+        {
+            if (string.IsNullOrWhiteSpace(keyword))
+            {
+                return Ok(new List<Product>());
+            }
+
+            keyword = keyword.Trim().ToLower();
+
+            var products = await _context.Products
+                .Where(p => p.Name.ToLower().Contains(keyword))
+                .OrderByDescending(p => p.Id)
+                .ToListAsync();
+
+            return Ok(products);
+        }
+        // GET api/Products/filter?categoryId=1&min=100000&max=500000
+        [HttpGet("filter")]
+        public async Task<IActionResult> Filter(
+            int? categoryId,
+            decimal min = 0,
+            decimal max = decimal.MaxValue)
+        {
+            var query = _context.Products.AsQueryable();
+
+            if (categoryId.HasValue)
+            {
+                query = query.Where(x => x.CategoryProductId == categoryId.Value);
+            }
+
+            query = query.Where(x => x.Price >= min && x.Price <= max);
+
+            var products = await query
+                .OrderByDescending(x => x.Id)
+                .ToListAsync();
+
+            return Ok(products);
+        }
     }
+
 }

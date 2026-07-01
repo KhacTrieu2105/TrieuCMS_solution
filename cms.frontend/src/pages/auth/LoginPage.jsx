@@ -59,6 +59,11 @@ const Login = () => {
                             <label>Mật khẩu</label>
                             <input type="password" className="form-control" name="password" value={formData.password} onChange={handleChange} required />
                         </div>
+                        <div className="text-end mt-2">
+                            <Link to="/forgot-password">
+                                Quên mật khẩu?
+                            </Link>
+                        </div>
                         <button type="submit" className="btn btn-primary w-100" disabled={loading}>
                             {loading ? 'ĐANG XỬ LÝ...' : 'ĐĂNG NHẬP'}
                         </button>

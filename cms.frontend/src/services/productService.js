@@ -5,9 +5,8 @@ const API_URL = "https://localhost:7186";
 
 const productService = {
 
-    getHotProducts: async () => {
-        const res = await axiosClient.get('/products/hot');
-        return res.data;
+    getHotProducts: () => {
+        return axiosClient.get('/Products/hot');
     },
     // 1. Lấy tất cả sản phẩm
     getAllProducts: () => {
@@ -23,6 +22,14 @@ const productService = {
     // 3. Lấy sản phẩm chi tiết theo ID
     getProductById: (id) => {
         return axiosClient.get(`/Products/${id}`);
+    },
+    searchProducts: (keyword) => {
+        return axiosClient.get(`/Products/search?keyword=${encodeURIComponent(keyword)}`);
+    },
+    filterProducts: (categoryId, min, max) => {
+        return axiosClient.get(
+            `/Products/filter?categoryId=${categoryId ?? ""}&min=${min}&max=${max}`
+        );
     }
 
 

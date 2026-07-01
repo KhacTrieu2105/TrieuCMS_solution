@@ -38,8 +38,16 @@ const customerService = {
     // 🚨 BẮT BUỘC PHẢI CÓ HÀM NÀY ĐỂ HEADER GỌI ĐĂNG XUẤT
     logout: () => {
         return axiosClient.post('/CustomerAuth/logout');
-    }
+    },
+    forgotPassword(email) {
+        return axiosClient.post("/CustomerAuth/forgot-password", {
+            email
+        });
+    },
 
+    resetPassword(data) {
+        return axiosClient.post("/CustomerAuth/reset-password", data);
+    }
 };
 
 export default customerService;

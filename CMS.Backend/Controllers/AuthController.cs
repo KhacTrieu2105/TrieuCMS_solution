@@ -1,15 +1,16 @@
-﻿using CMS.Data;
+﻿using BCrypt.Net; // Thư viện mã hóa
+using CMS.Data;
 using CMS.Data.Entities;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
-using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using BCrypt.Net; // Thư viện mã hóa
+using System.Security.Claims;
+using System.Threading.Tasks;
+using CMS.API.Services;
 
 namespace CMS.Backend.Controllers
 {
@@ -18,10 +19,14 @@ namespace CMS.Backend.Controllers
     public class CustomerAuthController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IEmailService _emailService;
 
-        public CustomerAuthController(ApplicationDbContext context)
+        public CustomerAuthController(
+      ApplicationDbContext context,
+      IEmailService emailService)
         {
             _context = context;
+            _emailService = emailService;
         }
 
         private int? CurrentCustomerId =>
@@ -207,8 +212,92 @@ namespace CMS.Backend.Controllers
             await _context.SaveChangesAsync();
             return Ok(new { success = true, message = "Đổi mật khẩu thành công!" });
         }
-    }
 
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordDto dto)
+        {
+            try
+            {
+                var customer = await _context.Customers
+                    .FirstOrDefaultAsync(x => x.Email == dto.Email);
+
+                if (customer == null)
+                    return BadRequest(new
+                    {
+                        message = "Email không tồn tại."
+                    });
+
+                var otp = new Random().Next(100000, 999999).ToString();
+
+                OtpStore.Data[dto.Email] = new OtpStore.OtpItem
+                {
+                    Code = otp,
+                    Expire = DateTime.Now.AddMinutes(5)
+                };
+
+                await _emailService.SendAsync(
+                    dto.Email,
+                    "Mã OTP",
+                    $"OTP của bạn là <b>{otp}</b>"
+                );
+
+                return Ok(new
+                {
+                    message = "Đã gửi OTP."
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    message = ex.ToString()
+                });
+            }
+        }
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordDto dto)
+        {
+            if (!OtpStore.Data.ContainsKey(dto.Email))
+                return BadRequest("OTP hết hạn.");
+
+            var item = OtpStore.Data[dto.Email];
+
+            if (item.Code != dto.Otp)
+                return BadRequest("OTP không đúng.");
+
+            if (DateTime.Now > item.Expire)
+                return BadRequest("OTP đã hết hạn.");
+
+            var customer = await _context.Customers
+                .FirstOrDefaultAsync(x => x.Email == dto.Email);
+
+            if (customer == null)
+                return BadRequest();
+
+            customer.Password = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+
+            await _context.SaveChangesAsync();
+
+            OtpStore.Data.TryRemove(dto.Email, out _);
+
+            return Ok(new
+            {
+                message = "Đổi mật khẩu thành công."
+            });
+        }
+    }
+    public class ResetPasswordDto
+    {
+        public string Email { get; set; }
+
+        public string Otp { get; set; }
+
+        public string NewPassword { get; set; }
+    }
+    public class ForgotPasswordDto
+    {
+        public string Email { get; set; }
+    }
     public class LoginDto
     {
         public string Email { get; set; } = "";

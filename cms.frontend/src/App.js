@@ -11,9 +11,12 @@ import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import Profile from './pages/profile/Profile';
 import SearchResult from './pages/serch/SearchResult';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from "./pages/ResetPassword";
 import './assets/theme.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+
 
 function App() {
     return (
@@ -32,6 +35,8 @@ function App() {
                     <Route path="/register" element={<RegisterPage />} />
                     <Route path="/search" element={<SearchResult />} />
                     <Route path="/profile" element={<Profile />} />
+                    <Route path="/forgot-password" element={<ForgotPassword />} />
+                    <Route path="/reset-password" element={<ResetPassword />} />
                 </Routes>
             </main>
             <Footer />

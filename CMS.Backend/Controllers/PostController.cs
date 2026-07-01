@@ -48,7 +48,9 @@ namespace CMS.Backend.Controllers
         [HttpPost]
         public IActionResult Create(Post model, IFormFile uploadImage)
         {
+            // Bỏ qua validate Category và ImageUrl vì chúng ta tự xử lý
             ModelState.Remove("Category");
+            ModelState.Remove("ImageUrl");
 
             if (ModelState.IsValid)
             {
@@ -73,6 +75,8 @@ namespace CMS.Backend.Controllers
                 return RedirectToAction("Index");
             }
 
+            // Nếu có lỗi, log ra console để debug
+            var errors = ModelState.Values.SelectMany(v => v.Errors);
             ViewBag.Categories = _context.Categories.ToList();
             return View(model);
         }
@@ -82,48 +86,55 @@ namespace CMS.Backend.Controllers
         {
             var post = _context.Posts.FirstOrDefault(p => p.Id == id);
             if (post == null) return NotFound();
+
+            // Gửi danh sách Category sang View
             ViewBag.Categories = _context.Categories.ToList();
             return View(post);
         }
 
+        // 2. Dùng để lưu dữ liệu sau khi sửa (POST)
         [HttpPost]
-        public IActionResult Edit(Post model, IFormFile uploadImage)
+        [ValidateAntiForgeryToken]
+        public IActionResult Edit(Post model, IFormFile? uploadImage)
         {
-            ModelState.Remove("Category");
+            var post = _context.Posts.FirstOrDefault(x => x.Id == model.Id);
 
-            if (ModelState.IsValid)
+            if (post == null)
+                return NotFound();
+
+            post.Title = model.Title;
+            post.Content = model.Content;
+            post.CategoryId = model.CategoryId;
+
+            // Nếu có chọn ảnh mới thì cập nhật
+            if (uploadImage != null && uploadImage.Length > 0)
             {
-                var existingPost = _context.Posts.Find(model.Id);
-                if (existingPost == null) return NotFound();
+                string uploadsFolder = Path.Combine(
+                    _webHostEnvironment.WebRootPath,
+                    "uploads");
 
-                if (uploadImage != null && uploadImage.Length > 0)
+                if (!Directory.Exists(uploadsFolder))
+                    Directory.CreateDirectory(uploadsFolder);
+
+                string fileName =
+                    Guid.NewGuid().ToString() +
+                    Path.GetExtension(uploadImage.FileName);
+
+                string filePath =
+                    Path.Combine(uploadsFolder, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
                 {
-                    string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads");
-                    if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
-
-                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(uploadImage.FileName);
-                    string filePath = Path.Combine(uploadsFolder, fileName);
-
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        uploadImage.CopyTo(stream);
-                    }
-                    existingPost.ImageUrl = "/uploads/" + fileName;
+                    uploadImage.CopyTo(stream);
                 }
 
-                existingPost.Title = model.Title;
-                existingPost.Content = model.Content;
-                existingPost.CategoryId = model.CategoryId;
-                existingPost.CreatedDate = DateTime.Now;
-
-                _context.Posts.Update(existingPost);
-                _context.SaveChanges();
-                return RedirectToAction("Index");
+                post.ImageUrl = "/uploads/" + fileName;
             }
-            ViewBag.Categories = _context.Categories.ToList();
-            return View(model);
-        }
 
+            _context.SaveChanges();
+
+            return RedirectToAction(nameof(Index));
+        }
         public IActionResult Delete(int id)
         {
             var post = _context.Posts.FirstOrDefault(p => p.Id == id);

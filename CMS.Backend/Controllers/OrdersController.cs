@@ -105,6 +105,12 @@ namespace CMS.Backend.Controllers
 <h3>Tổng tiền: {total:N0} VNĐ</h3>
 
 <p>Cảm ơn quý khách đã mua hàng!</p>";
+                await _emailService.SendAsync(
+    input.Email,
+    $"Xác nhận đơn hàng #{newOrder.Id}",
+    body
+);
+
                 return StatusCode(201, new { message = "Đặt hàng thành công!", id = newOrder.Id });
             }
             catch (Exception ex)

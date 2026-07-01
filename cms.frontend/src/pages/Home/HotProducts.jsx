@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 const HotProducts = () => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const API_URL = "https://localhost:7186";
 
     useEffect(() => {
         const fetchData = async () => {
@@ -33,7 +34,11 @@ const HotProducts = () => {
                         products.map(product => (
                             <div key={product.id} className="col-md-4 mb-4">
                                 <div className="card h-100 border-0 shadow-sm transition-card">
-                                    <img src={product.imageUrl} className="card-img-top" alt={product.name} />
+                                    <img
+                                        src={`${API_URL}${product.imageUrl}`}
+                                        alt={product.name}
+                                        className="card-img-top"
+                                    />
                                     <div className="card-body text-center">
                                         <h5 className="card-title">{product.name}</h5>
                                         <p className="text-primary fw-bold">
