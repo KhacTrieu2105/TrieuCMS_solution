@@ -30,8 +30,10 @@ const productService = {
         return axiosClient.get(
             `/Products/filter?categoryId=${categoryId ?? ""}&min=${min}&max=${max}`
         );
-    }
-
+    },
+    getLatestProducts: () => {
+        return axiosClient.get("/Products/latest");
+    },
 
 };
 

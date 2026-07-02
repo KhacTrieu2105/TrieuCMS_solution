@@ -6,33 +6,35 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
+// Email
 builder.Services.Configure<EmailSettings>(
     builder.Configuration.GetSection("EmailSettings"));
 
 builder.Services.AddScoped<IEmailService, EmailService>();
 
-// 1. Add services to the container.
+// MVC + API
 builder.Services.AddControllersWithViews();
 
-// 2. Swagger
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// 3. Database Context
+// Database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// 4. Authentication (Xác thực Cookie)
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
-    {
-        options.LoginPath = "/Account/Login";
-        options.AccessDeniedPath = "/Account/AccessDenied";
-        options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
-    });
+// Authentication
+builder.Services.AddAuthentication(
+    CookieAuthenticationDefaults.AuthenticationScheme)
+.AddCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.AccessDeniedPath = "/Account/AccessDenied";
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+});
 
-// 5. CORS Policy (Chỉ khai báo 1 lần duy nhất)
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
@@ -40,15 +42,12 @@ builder.Services.AddCors(options =>
         policy.WithOrigins("http://localhost:3000")
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials(); // Hỗ trợ gửi Cookie/Auth
+              .AllowCredentials();
     });
 });
 
 var app = builder.Build();
 
-// --- HTTP REQUEST PIPELINE ---
-
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -61,18 +60,25 @@ else
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles(); // Chỉ khai báo 1 lần
+
+app.UseStaticFiles();
 
 app.UseRouting();
 
-// Sử dụng CORS
 app.UseCors("AllowReactApp");
 
-// THỨ TỰ BẮT BUỘC: Authentication -> Authorization
 app.UseAuthentication();
+
 app.UseAuthorization();
 
-// Route mặc định
+//
+// API Controllers
+//
+app.MapControllers();
+
+//
+// MVC Controllers
+//
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

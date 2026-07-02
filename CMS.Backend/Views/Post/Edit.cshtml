@@ -56,7 +56,11 @@
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Nội dung chi tiết bài viết:</label>
-                            <textarea asp-for="Content" class="form-control" rows="8" required></textarea>
+                            <textarea asp-for="Content"
+                                      id="editor"
+                                      class="form-control"
+                                      rows="10">
+</textarea>
                             <span asp-validation-for="Content" class="text-danger"></span>
                         </div>
 
@@ -74,7 +78,19 @@
 </div>
 
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+
+    <partial name="_ValidationScriptsPartial" />
+
+    <script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
+
+    <script>
+                ClassicEditor.create(document.querySelector('#editor'),{
+
+            ckfinder:{
+                uploadUrl:'/Post/UploadImage'
+            }
+
+        });
+    </script>
+
 }

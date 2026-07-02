@@ -162,6 +162,24 @@ namespace CMS.Backend.Controllers
 
             return Ok(products);
         }
+
+        [HttpGet("latest")]
+        public async Task<IActionResult> GetLatestProducts()
+        {
+            var products = await _context.Products
+                .OrderByDescending(x => x.Id)
+                .Take(3)
+                .Select(x => new
+                {
+                    x.Id,
+                    x.Name,
+                    x.Price,
+                    x.ImageUrl
+                })
+                .ToListAsync();
+
+            return Ok(products);
+        }
     }
 
 }

@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using CMS.Data;
-using System.Linq;
+﻿using CMS.Data;
+using CMS.Data.Entities;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace CMS.Backend.Controllers
 {
@@ -9,104 +11,175 @@ namespace CMS.Backend.Controllers
     public class PostsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public PostsController(ApplicationDbContext context)
+        public PostsController(
+            ApplicationDbContext context,
+            IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
+            _webHostEnvironment = webHostEnvironment;
         }
 
-        // GET: api/posts
+        //==========================
+        // GET ALL
+        //==========================
         [HttpGet]
         public IActionResult GetAll()
         {
             var posts = _context.Posts
-               .OrderByDescending(p => p.Id)
-               .Select(p => new {
-                   p.Id,
-                   p.Title,
-                   p.ImageUrl,
-                   p.CreatedDate, // Đã sửa từ CreatedAt sang CreatedDate
-                   CategoryName = p.Category.Name
-               })
-               .ToList();
+                .Include(x => x.Category)
+                .OrderByDescending(x => x.Id)
+                .Select(x => new
+                {
+                    x.Id,
+                    x.Title,
+                    x.ImageUrl,
+                    x.CreatedDate,
+                    CategoryName = x.Category.Name
+                })
+                .ToList();
+
             return Ok(posts);
         }
 
-        // GET: api/posts/category/5
+        //==========================
+        // GET BY CATEGORY
+        //==========================
         [HttpGet("category/{categoryId}")]
         public IActionResult GetByCategory(int categoryId)
         {
             var posts = _context.Posts
-                .Where(p => p.CategoryId == categoryId)
-                .Select(p => new {
-                    p.Id,
-                    p.Title,
-                    p.ImageUrl,
-                    p.CreatedDate // Đã sửa từ CreatedAt sang CreatedDate
+                .Where(x => x.CategoryId == categoryId)
+                .OrderByDescending(x => x.Id)
+                .Select(x => new
+                {
+                    x.Id,
+                    x.Title,
+                    x.ImageUrl,
+                    x.CreatedDate
                 })
                 .ToList();
+
             return Ok(posts);
         }
 
-        // GET: api/posts/5
+        //==========================
+        // GET DETAIL
+        //==========================
         [HttpGet("{id}")]
         public IActionResult GetDetail(int id)
         {
-            var post = _context.Posts.FirstOrDefault(p => p.Id == id);
+            var post = _context.Posts.FirstOrDefault(x => x.Id == id);
 
             if (post == null)
-            {
-                return NotFound(new { message = "Không tìm thấy bài viết này trong hệ thống" });
-            }
+                return NotFound(new
+                {
+                    message = "Không tìm thấy bài viết"
+                });
 
             return Ok(post);
         }
-        // POST: api/posts (Thêm mới)
-        [HttpPost]
-        public IActionResult Create([FromBody] CMS.Data.Entities.Post post)
-        {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            // Gán ngày tạo tự động nếu Frontend chưa gửi lên
-            if (post.CreatedDate == default) post.CreatedDate = System.DateTime.Now;
+        //==========================
+        // CREATE
+        //==========================
+        [HttpPost]
+        public IActionResult Create([FromBody] Post post)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (post.CreatedDate == default)
+                post.CreatedDate = DateTime.Now;
 
             _context.Posts.Add(post);
+
             _context.SaveChanges();
 
-            return CreatedAtAction(nameof(GetDetail), new { id = post.Id }, post);
+            return CreatedAtAction(nameof(GetDetail),
+                new { id = post.Id }, post);
         }
 
-        // PUT: api/posts/5 (Sửa)
+        //==========================
+        // UPDATE
+        //==========================
         [HttpPut("{id}")]
-        public IActionResult Update(int id, [FromBody] CMS.Data.Entities.Post post)
+        public IActionResult Update(int id, [FromBody] Post post)
         {
-            if (id != post.Id) return BadRequest("ID không khớp");
+            if (id != post.Id)
+                return BadRequest();
 
-            var existingPost = _context.Posts.Find(id);
-            if (existingPost == null) return NotFound();
+            var existing = _context.Posts.Find(id);
 
-            // Cập nhật thông tin
-            existingPost.Title = post.Title;
-            existingPost.ImageUrl = post.ImageUrl;
-            existingPost.Content = post.Content;
-            existingPost.CategoryId = post.CategoryId;
-            // Không cập nhật CreatedDate để giữ nguyên ngày tạo gốc
+            if (existing == null)
+                return NotFound();
+
+            existing.Title = post.Title;
+            existing.Content = post.Content;
+            existing.ImageUrl = post.ImageUrl;
+            existing.CategoryId = post.CategoryId;
 
             _context.SaveChanges();
+
             return NoContent();
         }
 
-        // DELETE: api/posts/5 (Xóa)
+        //==========================
+        // DELETE
+        //==========================
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
             var post = _context.Posts.Find(id);
-            if (post == null) return NotFound();
+
+            if (post == null)
+                return NotFound();
 
             _context.Posts.Remove(post);
+
             _context.SaveChanges();
 
-            return Ok(new { message = "Đã xóa bài viết thành công" });
+            return Ok(new
+            {
+                message = "Đã xóa thành công"
+            });
+        }
+
+        //==========================
+        // CKEDITOR UPLOAD IMAGE
+        //==========================
+        [HttpPost("upload")]
+        public async Task<IActionResult> UploadImage(IFormFile upload)
+        {
+            if (upload == null || upload.Length == 0)
+                return BadRequest();
+
+            string uploadFolder = Path.Combine(
+                _webHostEnvironment.WebRootPath,
+                "uploads");
+
+            if (!Directory.Exists(uploadFolder))
+            {
+                Directory.CreateDirectory(uploadFolder);
+            }
+
+            string fileName =
+                Guid.NewGuid().ToString() +
+                Path.GetExtension(upload.FileName);
+
+            string filePath =
+                Path.Combine(uploadFolder, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await upload.CopyToAsync(stream);
+            }
+
+            return Ok(new
+            {
+                url = "/uploads/" + fileName
+            });
         }
     }
 }

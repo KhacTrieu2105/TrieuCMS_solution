@@ -62,7 +62,7 @@ namespace CMS.Backend.Controllers
                         OrderId = newOrder.Id,
                         ProductId = item.ProductId,
                         Quantity = item.Quantity,
-                       
+                        UnitPrice = product.Price
                     });
                 }
 
